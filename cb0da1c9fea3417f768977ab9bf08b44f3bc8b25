@@ -22,6 +22,30 @@
       },
       "revId": "cb0da1c9fea3417f768977ab9bf08b44f3bc8b25",
       "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c0ef678a_8a6fcbd3",
+        "filename": ".github/workflows/gerrit-required-verify-non-voting.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 541
+      },
+      "writtenOn": "2024-03-07T22:06:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "38fa4a07_fb89f39b",
+      "range": {
+        "startLine": 45,
+        "startChar": 0,
+        "endLine": 49,
+        "endChar": 16
+      },
+      "revId": "cb0da1c9fea3417f768977ab9bf08b44f3bc8b25",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
     }
   ]
 }
