@@ -46,6 +46,30 @@
       },
       "revId": "03edaac5909b7434c203353abd19e997d2269bd7",
       "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f337573b_16794980",
+        "filename": ".github/workflows/gerrit-required-verify-non-voting.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1453
+      },
+      "writtenOn": "2024-03-07T20:57:36Z",
+      "side": 1,
+      "message": "All I see here are changes to the yamllint comments.",
+      "parentUuid": "5337a9c9_fef42d8e",
+      "range": {
+        "startLine": 62,
+        "startChar": 4,
+        "endLine": 66,
+        "endChar": 20
+      },
+      "revId": "03edaac5909b7434c203353abd19e997d2269bd7",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
     }
   ]
 }
