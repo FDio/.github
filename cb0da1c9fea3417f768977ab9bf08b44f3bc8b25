@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "38fa4a07_fb89f39b",
+        "filename": ".github/workflows/gerrit-required-verify-non-voting.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1453
+      },
+      "writtenOn": "2024-03-07T21:06:52Z",
+      "side": 1,
+      "message": "Sorry, let me be more specific. This should be added to the workflow_dispatch inputs, just below GERRIT_REFSPEC. It should not be in its own section.",
+      "range": {
+        "startLine": 45,
+        "startChar": 0,
+        "endLine": 49,
+        "endChar": 16
+      },
+      "revId": "cb0da1c9fea3417f768977ab9bf08b44f3bc8b25",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    }
+  ]
+}
