@@ -70,6 +70,30 @@
       },
       "revId": "03edaac5909b7434c203353abd19e997d2269bd7",
       "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b974291f_01afeaca",
+        "filename": ".github/workflows/gerrit-required-verify-non-voting.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 541
+      },
+      "writtenOn": "2024-03-07T22:07:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f337573b_16794980",
+      "range": {
+        "startLine": 62,
+        "startChar": 4,
+        "endLine": 66,
+        "endChar": 20
+      },
+      "revId": "03edaac5909b7434c203353abd19e997d2269bd7",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
     }
   ]
 }
