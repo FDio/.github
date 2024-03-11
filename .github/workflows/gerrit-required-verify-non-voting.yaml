@@ -6,43 +6,46 @@ on:
   workflow_dispatch:
     inputs:
       GERRIT_BRANCH:
-        description: 'Branch that change is against'
+        description: "Branch that change is against"
         required: true
         type: string
       GERRIT_CHANGE_ID:
-        description: 'The ID for the change'
+        description: "The ID for the change"
         required: true
         type: string
       GERRIT_CHANGE_NUMBER:
-        description: 'The Gerrit number'
+        description: "The Gerrit number"
         required: true
         type: string
       GERRIT_CHANGE_URL:
-        description: 'URL to the change'
+        description: "URL to the change"
         required: true
         type: string
       GERRIT_EVENT_TYPE:
-        description: 'Gerrit event type'
+        description: "Type of Gerrit event"
         required: true
         type: string
       GERRIT_PATCHSET_NUMBER:
-        description: 'The revision sha'
+        description: "The patch number for the change"
+        required: true
+        type: string
+      GERRIT_PATCHSET_REVISION:
+        description: "The revision sha"
         required: true
         type: string
       GERRIT_PROJECT:
-        description: 'Project in Gerrit'
+        description: "Project in Gerrit"
         required: true
         type: string
       GERRIT_REFSPEC:
-        description: 'Gerrit refspec of change'
+        description: "Gerrit refspec of change"
         required: true
         type: string
       TARGET_REPO:
-        # yamllint disable rule:line-length
-        description: 'The target GitHub repository needing the required workflow'
+        # yamllint disable-line rule:line-length
+        description: "The target GitHub repository needing the required workflow"
         required: true
         type: string
-        # yamllint enable rule:line-length
 
 concurrency:
   group: ${{ github.event.inputs.GERRIT_CHANGE_ID || github.run_id }}
@@ -51,7 +54,7 @@ concurrency:
 jobs:
   call-gerrit-ci-management-verify:
     # yamllint disable rule:line-length
-    uses: lfit/releng-reusable-workflows/.github/workflows/gerrit-ci-management-verify.yaml@main
+    uses: lfit/releng-reusable-workflows/.github/workflows/composed-ci-management-verify.yaml@main
     # yamllint enable rule:line-length
     with:
       GERRIT_BRANCH: ${{ inputs.GERRIT_BRANCH }}
@@ -63,5 +66,6 @@ jobs:
       GERRIT_PATCHSET_REVISION: ${{ inputs.GERRIT_PATCHSET_REVISION }}
       GERRIT_PROJECT: ${{ inputs.GERRIT_PROJECT }}
       GERRIT_REFSPEC: ${{ inputs.GERRIT_REFSPEC }}
+      comment-only: true
     secrets:
       GERRIT_SSH_PRIVKEY: ${{ secrets.GERRIT_SSH_PRIVKEY }}
