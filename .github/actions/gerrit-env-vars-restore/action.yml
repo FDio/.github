@@ -1,0 +1,145 @@
+---
+name: "🛠️ Gerrit EnvironmentVariables Restore"
+description: |
+  This GitHub Action restores Gerrit environment variables from a checkpoint.
+
+inputs:
+  TUI_LINE:
+    description: "Delimiter line for TUI output"
+    required: false
+    default: "*******************************************************************"
+    type: string
+  GITHUB_TOKEN:
+    description: "GitHub token for API access"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download Gerrit Environment Variables Checkpoint Artifact via GitHub API
+      id: download-artifact
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        # Get the artifact download URL
+        ARTIFACTS_URL="https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts"
+
+        echo "Fetching artifacts from: $ARTIFACTS_URL"
+        echo "Workflow run ID: ${{ github.event.workflow_run.id }}"
+        echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
+
+        # Get all artifacts info for debugging
+        ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: token ${{ inputs.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          "$ARTIFACTS_URL")
+
+        echo "=== All artifacts in this workflow run ==="
+        echo "$ARTIFACTS_RESPONSE" | jq -r '.artifacts[] | "\(.name) (ID: \(.id), expired: \(.expired))"' || echo "No artifacts or jq error"
+
+        # Find the fdio-gerrit-vars artifact
+        ARTIFACT_ID=$(echo "$ARTIFACTS_RESPONSE" | jq -r '.artifacts[] | select(.name=="fdio-gerrit-vars") | .id')
+
+        if [ "$ARTIFACT_ID" = "null" ] || [ -z "$ARTIFACT_ID" ]; then
+          echo "Error: fdio-gerrit-vars artifact not found"
+          echo "Available artifacts:"
+          echo "$ARTIFACTS_RESPONSE" | jq -r '.artifacts[].name' || echo "Failed to parse artifacts"
+
+          # Try to find any fdio-gerrit-vars-* artifacts as fallback
+          MATRIX_ARTIFACT_ID=$(echo "$ARTIFACTS_RESPONSE" | jq -r '.artifacts[] | select(.name | startswith("fdio-gerrit-vars-")) | .id' | head -1)
+          if [ -n "$MATRIX_ARTIFACT_ID" ] && [ "$MATRIX_ARTIFACT_ID" != "null" ]; then
+            echo "Found matrix artifact instead, using: $MATRIX_ARTIFACT_ID"
+            ARTIFACT_ID="$MATRIX_ARTIFACT_ID"
+          else
+            echo "No suitable artifacts found"
+            exit 1
+          fi
+        fi
+
+        echo "Using artifact ID: $ARTIFACT_ID"
+
+        # Download the artifact
+        DOWNLOAD_URL="https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip"
+        curl -s -L -H "Authorization: token ${{ inputs.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          "$DOWNLOAD_URL" -o artifact.zip
+
+        # Extract the artifact
+        unzip -q artifact.zip
+        echo "=== Extracted contents ==="
+        ls -la
+
+    - name: Restore Gerrit Environment Variables
+      id: restore-gerrit-env-vars
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        GERRIT_BRANCH_FILE="gerrit-branch"
+        GERRIT_CHANGE_ID_FILE="gerrit-change-id"
+        GERRIT_CHANGE_NUMBER_FILE="gerrit-change-number"
+        GERRIT_CHANGE_URL_FILE="gerrit-change-url"
+        GERRIT_EVENT_TYPE_FILE="gerrit-event-type"
+        GERRIT_PATCHSET_NUMBER_FILE="gerrit-patchset-number"
+        GERRIT_PATCHSET_REVISION_FILE="gerrit-patchset-revision"
+        GERRIT_PROJECT_FILE="gerrit-project"
+        GERRIT_REFSPEC_FILE="gerrit-refspec"
+
+        # Validate all required files exist
+        REQUIRED_FILES=(
+          "$GERRIT_BRANCH_FILE"
+          "$GERRIT_CHANGE_ID_FILE"
+          "$GERRIT_CHANGE_NUMBER_FILE"
+          "$GERRIT_CHANGE_URL_FILE"
+          "$GERRIT_EVENT_TYPE_FILE"
+          "$GERRIT_PATCHSET_NUMBER_FILE"
+          "$GERRIT_PATCHSET_REVISION_FILE"
+          "$GERRIT_PROJECT_FILE"
+          "$GERRIT_REFSPEC_FILE"
+        )
+
+        for file in "${REQUIRED_FILES[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "Error: Required file $file not found!"
+            echo "Current directory contents:"
+            ls -la
+            exit 1
+          fi
+        done
+
+        # Read the content and set outputs
+        GERRIT_BRANCH_VALUE=$(cat "$GERRIT_BRANCH_FILE" | tr -d '\n' | tr -d '\r')
+        GERRIT_CHANGE_ID_VALUE=$(cat "$GERRIT_CHANGE_ID_FILE" | tr -d '\n' | tr -d '\r')
+        GERRIT_CHANGE_NUMBER_VALUE=$(cat "$GERRIT_CHANGE_NUMBER_FILE" | tr -d '\n' | tr -d '\r')
+        GERRIT_CHANGE_URL_VALUE=$(cat "$GERRIT_CHANGE_URL_FILE" | tr -d '\n' | tr -d '\r')
+        GERRIT_EVENT_TYPE_VALUE=$(cat "$GERRIT_EVENT_TYPE_FILE" | tr -d '\n' | tr -d '\r')
+        GERRIT_PATCHSET_NUMBER_VALUE=$(cat "$GERRIT_PATCHSET_NUMBER_FILE" | tr -d '\n' | tr -d '\r')
+        GERRIT_PATCHSET_REVISION_VALUE=$(cat "$GERRIT_PATCHSET_REVISION_FILE" | tr -d '\n' | tr -d '\r')
+        GERRIT_PROJECT_VALUE=$(cat "$GERRIT_PROJECT_FILE" | tr -d '\n' | tr -d '\r')
+        GERRIT_REFSPEC_VALUE=$(cat "$GERRIT_REFSPEC_FILE" | tr -d '\n' | tr -d '\r')
+
+        echo "GERRIT_BRANCH=$GERRIT_BRANCH_VALUE" >> $GITHUB_ENV
+        echo "GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID_VALUE" >> $GITHUB_ENV
+        echo "GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER_VALUE" >> $GITHUB_ENV
+        echo "GERRIT_CHANGE_URL=$GERRIT_CHANGE_URL_VALUE" >> $GITHUB_ENV
+        echo "GERRIT_EVENT_TYPE=$GERRIT_EVENT_TYPE_VALUE" >> $GITHUB_ENV
+        echo "GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER_VALUE" >> $GITHUB_ENV
+        echo "GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION_VALUE" >> $GITHUB_ENV
+        echo "GERRIT_PROJECT=$GERRIT_PROJECT_VALUE" >> $GITHUB_ENV
+        echo "GERRIT_REFSPEC=$GERRIT_REFSPEC_VALUE" >> $GITHUB_ENV
+
+    - name: Display Restored Gerrit Environment Variables
+      shell: bash
+      run: |
+        echo "${{ inputs.TUI_LINE }}"
+        echo "Successfully restored gerrit environment variables:"
+        echo "  env.GERRIT_BRANCH:             ${{ env.GERRIT_BRANCH }}"
+        echo "  env.GERRIT_CHANGE_ID:          ${{ env.GERRIT_CHANGE_ID }}"
+        echo "  env.GERRIT_CHANGE_NUMBER:      ${{ env.GERRIT_CHANGE_NUMBER }}"
+        echo "  env.GERRIT_CHANGE_URL:         ${{ env.GERRIT_CHANGE_URL }}"
+        echo "  env.GERRIT_EVENT_TYPE:         ${{ env.GERRIT_EVENT_TYPE }}"
+        echo "  env.GERRIT_PATCHSET_NUMBER:    ${{ env.GERRIT_PATCHSET_NUMBER }}"
+        echo "  env.GERRIT_PATCHSET_REVISION:  ${{ env.GERRIT_PATCHSET_REVISION }}"
+        echo "  env.GERRIT_PROJECT:            ${{ env.GERRIT_PROJECT }}"
+        echo "  env.GERRIT_REFSPEC:            ${{ env.GERRIT_REFSPEC }}"
+        echo "${{ inputs.TUI_LINE }}"

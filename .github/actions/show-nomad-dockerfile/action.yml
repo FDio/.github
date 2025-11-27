@@ -1,0 +1,36 @@
+---
+name: "🛠️ Show Nomad Dockerfile"
+description: |
+  This GitHub Action shows FD.io Nomad Dockerfile on the self-hosted runner.
+
+inputs:
+  TUI_LINE:
+    description: "Delimiter line for TUI output"
+    required: false
+    default: "*******************************************************************"
+    type: string
+  TUI_FILE_LINE:
+    description: "Delimiter line for file content"
+    required: false
+    default: "----- %< -----"
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Show Nomad Dockerfile
+      shell: bash
+      id: show-nomad-dockerfile
+      run: |
+          set -euo pipefail
+          DOCKERFILE_PATH="/scratch/docker-build/Dockerfile"
+          echo "${{ inputs.TUI_LINE }}"
+          if [ -f "$DOCKERFILE_PATH" ]; then
+              echo "Executor Dockerfile: $DOCKERFILE_PATH"
+              echo "${{ inputs.TUI_FILE_LINE }}"
+              cat "$DOCKERFILE_PATH"
+              echo "${{ inputs.TUI_FILE_LINE }}"
+          else
+              echo "No Dockerfile found in /scratch/docker-build."
+          fi
+          echo "${{ inputs.TUI_LINE }}"
