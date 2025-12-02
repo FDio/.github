@@ -137,3 +137,11 @@ runs:
 
           rm -f "${tmp_file}"
         done
+
+    - name: Publish Link
+      shell: bash
+      # yamllint disable rule:line-length
+      run: |
+        echo "S3 Logs:"
+        echo "::notice::https://logs.fd.io/vex-yul-rot-jenkins-1/${{ inputs.s3_path }}"
+      # yamllint enable rule:line-length
