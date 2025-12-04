@@ -35,6 +35,7 @@ runs:
         echo "$GERRIT_PATCHSET_REVISION" > fdio-gerrit-vars/gerrit-patchset-revision
         echo "$GERRIT_PROJECT" > fdio-gerrit-vars/gerrit-project
         echo "$GERRIT_REFSPEC" > fdio-gerrit-vars/gerrit-refspec
+        echo "$FDIO_NAMESPACE" > fdio-gerrit-vars/fdio-namespace
 
         echo "${{ inputs.TUI_LINE }}"
         echo "Successfully checkpointed Gerrit environment variables:"
@@ -47,6 +48,7 @@ runs:
         echo "GERRIT_PATCHSET_REVISION: $(cat fdio-gerrit-vars/gerrit-patchset-revision)"
         echo "GERRIT_PROJECT: $(cat fdio-gerrit-vars/gerrit-project)"
         echo "GERRIT_REFSPEC: $(cat fdio-gerrit-vars/gerrit-refspec)"
+        echo "FDIO_NAMESPACE: $(cat fdio-gerrit-vars/fdio-namespace)"
         echo "${{ inputs.TUI_LINE }}"
       # yamllint enable rule:line-length
 

@@ -87,6 +87,7 @@ runs:
         GERRIT_PATCHSET_REVISION_FILE="gerrit-patchset-revision"
         GERRIT_PROJECT_FILE="gerrit-project"
         GERRIT_REFSPEC_FILE="gerrit-refspec"
+        FDIO_NAMESPACE_FILE="fdio-namespace"
 
         # Validate all required files exist
         REQUIRED_FILES=(
@@ -99,6 +100,7 @@ runs:
           "$GERRIT_PATCHSET_REVISION_FILE"
           "$GERRIT_PROJECT_FILE"
           "$GERRIT_REFSPEC_FILE"
+          "$FDIO_NAMESPACE_FILE"
         )
 
         for file in "${REQUIRED_FILES[@]}"; do
@@ -120,6 +122,7 @@ runs:
         GERRIT_PATCHSET_REVISION_VALUE=$(cat "$GERRIT_PATCHSET_REVISION_FILE" | tr -d '\n' | tr -d '\r')
         GERRIT_PROJECT_VALUE=$(cat "$GERRIT_PROJECT_FILE" | tr -d '\n' | tr -d '\r')
         GERRIT_REFSPEC_VALUE=$(cat "$GERRIT_REFSPEC_FILE" | tr -d '\n' | tr -d '\r')
+        FDIO_NAMESPACE_VALUE=$(cat "$FDIO_NAMESPACE_FILE" | tr -d '\n' | tr -d '\r')
 
         echo "GERRIT_BRANCH=$GERRIT_BRANCH_VALUE" >> $GITHUB_ENV
         echo "GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID_VALUE" >> $GITHUB_ENV
@@ -130,6 +133,7 @@ runs:
         echo "GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION_VALUE" >> $GITHUB_ENV
         echo "GERRIT_PROJECT=$GERRIT_PROJECT_VALUE" >> $GITHUB_ENV
         echo "GERRIT_REFSPEC=$GERRIT_REFSPEC_VALUE" >> $GITHUB_ENV
+        echo "FDIO_NAMESPACE=$FDIO_NAMESPACE_VALUE" >> $GITHUB_ENV
       # yamllint enable rule:line-length
 
     - name: Display Restored Gerrit Environment Variables
@@ -147,5 +151,6 @@ runs:
         echo "  env.GERRIT_PATCHSET_REVISION:  ${{ env.GERRIT_PATCHSET_REVISION }}"
         echo "  env.GERRIT_PROJECT:            ${{ env.GERRIT_PROJECT }}"
         echo "  env.GERRIT_REFSPEC:            ${{ env.GERRIT_REFSPEC }}"
+        echo "  env.FDIO_NAMESPACE:            ${{ env.FDIO_NAMESPACE }}"
         echo "${{ inputs.TUI_LINE }}"
       # yamllint enable rule:line-length
