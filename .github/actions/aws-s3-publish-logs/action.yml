@@ -122,9 +122,13 @@ runs:
 
         # Traverse and upload
         find . -type f | while read -r file; do
-          rel_path="${file#./}"              # relative path
-          tmp_file="$(mktemp).gz"            # temp gzip file
-          gzip -c "${file}" > "${tmp_file}"  # compress
+          rel_path="${file#./}"                # relative path
+          tmp_file="$(mktemp).gz"              # temp gzip file
+          if [[ "${file}" == *.gz ]] ; then
+            cp -a "${file}" "${tmp_file}"      # already compressed
+          else
+            gzip -c "${file}" > "${tmp_file}"  # compress
+          fi
 
           content_type=$(get_content_type "${file}")
 
