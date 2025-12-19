@@ -122,20 +122,21 @@ runs:
 
         # Traverse and upload
         find . -type f | while read -r file; do
-          rel_path="${file#./}"                # relative path
           tmp_file="$(mktemp).gz"              # temp gzip file
           if [[ "${file}" == *.gz ]] ; then
             cp -a "${file}" "${tmp_file}"      # already compressed
+            rel_path="${file#./}"                # relative path
           else
             gzip -c "${file}" > "${tmp_file}"  # compress
+            rel_path="${file#./}.gz"                # relative path
           fi
 
           content_type=$(get_content_type "${file}")
 
           S3_ARN="s3://${{ inputs.s3_bucket }}/vex-yul-rot-jenkins-1"
-          S3_ARN="${S3_ARN}/${{ inputs.s3_path }}/${rel_path}.gz"
+          S3_ARN="${S3_ARN}/${{ inputs.s3_path }}/${rel_path}"
 
-          echo "Uploading ${rel_path}.gz -> ${S3_ARN}"
+          echo "Uploading ${rel_path} -> ${S3_ARN}"
           aws s3 cp "${tmp_file}" "${S3_ARN}" \
             --content-type "${content_type}" --content-encoding "gzip"
 
