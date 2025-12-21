@@ -31,6 +31,11 @@ inputs:
     required: false
     default: "${{ github.workspace }}/archives"
     type: string
+  compress_files:
+    description: "Compress files with gzip prior to upload"
+    required: false
+    default: true
+    type: string
 
 runs:
   using: "composite"
@@ -123,12 +128,13 @@ runs:
         # Traverse and upload
         find . -type f | while read -r file; do
           tmp_file="$(mktemp).gz"              # temp gzip file
-          if [[ "${file}" == *.gz ]] ; then
+          if [[ "${{ inputs.compress_files }}" == "false" ]] || \
+             [[ "${file}" == *.gz ]] ; then
             cp -a "${file}" "${tmp_file}"      # already compressed
-            rel_path="${file#./}"                # relative path
+            rel_path="${file#./}"              # relative path
           else
             gzip -c "${file}" > "${tmp_file}"  # compress
-            rel_path="${file#./}.gz"                # relative path
+            rel_path="${file#./}.gz"           # relative path
           fi
 
           content_type=$(get_content_type "${file/.gz}")
