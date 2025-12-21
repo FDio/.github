@@ -31,6 +31,11 @@ inputs:
     required: false
     default: "${{ github.workspace }}/archives"
     type: string
+  compress_files:
+    description: "Compress files with gzip prior to upload"
+    required: false
+    default: true
+    type: string
 
 runs:
   using: "composite"
@@ -118,27 +123,31 @@ runs:
 
         export -f get_content_type
 
-        pushd ${{ inputs.archives_path }}
+        pushd "${{ inputs.archives_path }}"
 
         # Traverse and upload
         find . -type f | while read -r file; do
           tmp_file="$(mktemp).gz"              # temp gzip file
-          if [[ "${file}" == *.gz ]] ; then
+          if [[ "${{ inputs.compress_files }}" == "false" ]] || \
+             [[ "${file}" == *.gz ]] ; then
             cp -a "${file}" "${tmp_file}"      # already compressed
-            rel_path="${file#./}"                # relative path
+            rel_path="${file#./}"              # relative path
+            content_encoding=""
           else
             gzip -c "${file}" > "${tmp_file}"  # compress
-            rel_path="${file#./}.gz"                # relative path
+            rel_path="${file#./}.gz"           # relative path
+            content_encoding="gzip"
           fi
 
-          content_type=$(get_content_type "${file/.gz}")
+          content_type=$(get_content_type "${file%.gz}")
 
           S3_ARN="s3://${{ inputs.s3_bucket }}/vex-yul-rot-jenkins-1"
           S3_ARN="${S3_ARN}/${{ inputs.s3_path }}/${rel_path}"
 
           echo "Uploading ${rel_path} -> ${S3_ARN}"
           aws s3 cp "${tmp_file}" "${S3_ARN}" \
-            --content-type "${content_type}" --content-encoding "gzip"
+            --content-type "${content_type}" \
+            ${content_encoding:+--content-encoding "${content_encoding}"}
 
           rm -f "${tmp_file}"
         done
