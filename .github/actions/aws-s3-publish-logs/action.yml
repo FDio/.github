@@ -132,7 +132,11 @@ runs:
              [[ "${file}" == *.gz ]] ; then
             cp -a "${file}" "${tmp_file}"      # already compressed
             rel_path="${file#./}"              # relative path
-            content_encoding=""
+            if [[ "${file}" == *.gz ]] ; then
+              content_encoding="gzip"
+            else
+              content_encoding=""
+            fi
           else
             gzip -c "${file}" > "${tmp_file}"  # compress
             rel_path="${file#./}.gz"           # relative path
