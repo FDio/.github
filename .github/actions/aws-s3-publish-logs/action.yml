@@ -26,6 +26,11 @@ inputs:
     required: false
     default: "${{ github.job }}/${{ github.run_id }}"
     type: string
+  s3_url:
+    description: "URL to S3 bucket"
+    required: false
+    default: "https://logs.fd.io/vex-yul-rot-jenkins-1"
+    type: string
   archives_path:
     description: "Source directory with logs artifact to archive."
     required: false
@@ -40,6 +45,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Publish Link
+      shell: bash
+      run: |
+        echo "S3 URL:"
+        echo "::notice:: ${{ inputs.s3_url }}/${{ inputs.s3_path }}"
+
     - name: Check if AWS CLI is pre-installed
       id: aws-binary-check
       shell: bash
@@ -158,8 +169,6 @@ runs:
 
     - name: Publish Link
       shell: bash
-      # yamllint disable rule:line-length
       run: |
-        echo "S3 Logs:"
-        echo "::notice::https://logs.fd.io/vex-yul-rot-jenkins-1/${{ inputs.s3_path }}"
-      # yamllint enable rule:line-length
+        echo "S3 URL:"
+        echo "::notice:: ${{ inputs.s3_url }}/${{ inputs.s3_path }}"
