@@ -1,7 +1,7 @@
 ---
 name: "🛠️ AWS S3 Publish Logs"
 description: |
-  This GitHub Action uploads logs to AWS S3.
+  This GitHub Action uploads logs|docs to AWS S3.
 
 inputs:
   aws_access_key_id:
@@ -40,6 +40,11 @@ inputs:
     description: "Compress files with gzip prior to upload"
     required: false
     default: true
+    type: string
+  jenkins_hostname:
+    description: "Legacy jenkins hostname part of logs/docs-7day buckets S3_ARN"
+    required: false
+    default: "/vex-yul-rot-jenkins-1"
     type: string
 
 runs:
@@ -156,7 +161,7 @@ runs:
 
           content_type=$(get_content_type "${file%.gz}")
 
-          S3_ARN="s3://${{ inputs.s3_bucket }}/vex-yul-rot-jenkins-1"
+          S3_ARN="s3://${{ inputs.s3_bucket }}${{ inputs.jenkins_hostname }}"
           S3_ARN="${S3_ARN}/${{ inputs.s3_path }}/${rel_path}"
 
           echo "Uploading ${rel_path} -> ${S3_ARN}"
