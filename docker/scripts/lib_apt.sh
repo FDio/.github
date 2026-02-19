@@ -36,9 +36,9 @@ select_dind_image() {
     esac
 }
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
-. "$CIMAN_DOCKER_SCRIPTS/lib_common.sh"
-. "$CIMAN_DOCKER_SCRIPTS/lib_csit.sh"
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_common.sh"
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_csit.sh"
 
 dump_apt_package_list() {
     branchname="$(echo $branch | sed -e 's,/,_,')"
@@ -62,7 +62,7 @@ generate_apt_dockerfile_common() {
 WORKDIR $DOCKER_DOWNLOADS_DIR
 
 # Copy-in temporary build tree containing
-# ci-management, vpp, & csit git repos
+# .github, vpp, & csit git repos
 WORKDIR $DOCKER_BUILD_DIR
 COPY . .
 
@@ -70,8 +70,8 @@ COPY . .
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV FDIOTOOLS_IMAGE="$executor_image"
 ENV FDIOTOOLS_EXECUTOR_CLASS="$executor_class"
-ENV CIMAN_ROOT="$DOCKER_CIMAN_ROOT"
-ENV PATH="\$PATH:$DOCKER_CIMAN_ROOT/docker/scripts"
+ENV DOT_GITHUB_ROOT="$DOCKER_DOT_GITHUB_ROOT"
+ENV PATH="\$PATH:$DOCKER_DOT_GITHUB_ROOT/docker/scripts"
 
 # Configure locales
 RUN apt-get update -qq \\
@@ -87,26 +87,6 @@ RUN apt-get update -qq \\
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US" LC_ALL="en_US.UTF-8"
 
 # Install baseline packages (minimum build & utils).
-#
-# ci-management global-jjb requirements:
-#        facter
-#        python3-pip
-#        python3-venv
-#    for lftools:
-#        xmlstarlet
-#        libxml2-dev
-#        libxslt-dev
-#   from packer/provision/baseline.sh:
-#        unzip
-#        xz-utils
-#        git
-#        git-review
-#        libxml2-dev
-#        libxml-xpath-perl
-#        libxslt-dev
-#        make
-#        wget
-#        jq
 #
 # Python build from source requirements:
 #        build-essential
@@ -311,7 +291,7 @@ csit_shim_generate_apt_dockerfile() {
     cat <<EOF >>"$DOCKERFILE"
 
 # Copy-in temporary build tree containing
-# ci-management, vpp, & csit git repos
+# .github, vpp, & csit git repos
 WORKDIR $DOCKER_BUILD_DIR
 COPY . .
 
@@ -319,8 +299,8 @@ COPY . .
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV FDIOTOOLS_IMAGE="$executor_image"
 ENV FDIOTOOLS_EXECUTOR_CLASS="$executor_class"
-ENV CIMAN_ROOT="$DOCKER_CIMAN_ROOT"
-ENV PATH="\$PATH:$DOCKER_CIMAN_ROOT/docker/scripts"
+ENV DOT_GITHUB_ROOT="$DOCKER_DOT_GITHUB_ROOT"
+ENV PATH="\$PATH:$DOCKER_DOT_GITHUB_ROOT/docker/scripts"
 
 # Configure locales & timezone
 RUN apt-get update -qq \\

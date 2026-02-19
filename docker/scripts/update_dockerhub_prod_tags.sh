@@ -21,8 +21,8 @@ logname="/tmp/$(basename $0).$(date -u +%Y_%m_%d_%H%M%S).log"
 echo -e "\n*** Logging output to $logname ***\n"
 exec > >(tee -a $logname) 2>&1
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
-. "$CIMAN_DOCKER_SCRIPTS/lib_common.sh"
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_common.sh"
 
 # Global variables
 long_bar="################################################################"

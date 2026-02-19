@@ -20,19 +20,13 @@ if [ -n "$(alias lib_csit_imported 2> /dev/null)" ] ; then
 fi
 alias lib_csit_imported=true
 
-export CIMAN_DOCKER_SCRIPTS="${CIMAN_DOCKER_SCRIPTS:-$(dirname ${BASH_SOURCE[0]})}"
-. "$CIMAN_DOCKER_SCRIPTS/lib_common.sh"
-. "$CIMAN_DOCKER_SCRIPTS/lib_apt.sh"
+export DOT_GITHUB_DOCKER_SCRIPTS="${DOT_GITHUB_DOCKER_SCRIPTS:-$(dirname ${BASH_SOURCE[0]})}"
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_common.sh"
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_apt.sh"
 
 # Branches must be listed in chronological order -- oldest stable branch
 # first and master last.
 #
-# Note: CI Jobs for each architecture are maintained in
-#       .../ci-management/jjb/vpp/vpp.yaml
-#       All OS's and branches are included in the 'os' and 'stream'
-#       definitions respectively, then the exclude list maintained
-#       to create an enumerated set of jobs jobs that match the
-#       definitions here.
 declare -A CSIT_VPP_BRANCHES
 CSIT_VPP_BRANCHES["ubuntu-24.04"]="stable/2506 stable/2510 master"
 export CSIT_VPP_BRANCHES

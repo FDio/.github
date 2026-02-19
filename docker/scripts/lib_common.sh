@@ -20,8 +20,8 @@ if [ -n "$(alias lib_common_imported 2> /dev/null)" ] ; then
 fi
 alias lib_common_imported="true"
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
-export CIMAN_ROOT="$(dirname $(dirname $CIMAN_DOCKER_SCRIPTS))"
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
+export DOT_GITHUB_ROOT="$(dirname $(dirname $DOT_GITHUB_DOCKER_SCRIPTS))"
 
 must_be_run_as_root_or_docker_group() {
     set_opts="$-"
@@ -240,7 +240,7 @@ executor_verify_os_name() {
 export DOCKER_DATE=${DOCKER_DATE:-"$(date -u +%Y_%m_%d_%H%M%S_UTC)"}
 export DOCKER_BUILD_DIR="/scratch/docker-build"
 export DOCKER_BUILD_VENV_DIR="$DOCKER_BUILD_DIR"/venv
-export DOCKER_CIMAN_ROOT="$DOCKER_BUILD_DIR"/ci-management
+export DOCKER_DOT_GITHUB_ROOT="$DOCKER_BUILD_DIR"/.github
 export DOCKERFILE="$DOCKER_BUILD_DIR"/Dockerfile
 export DOCKERIGNOREFILE="$DOCKER_BUILD_DIR"/.dockerignore
 export DOCKERFILE_FROM=${DOCKERFILE_FROM:="${OS_ID}:${OS_VERSION_ID}"}
@@ -251,16 +251,12 @@ export DOCKER_CSIT_DIR="$DOCKER_BUILD_DIR"/csit
 export DOCKER_DOWNLOADS_DIR="/root/Downloads"
 export DOCKER_BUILD_FILES_DIR="$DOCKER_BUILD_DIR"/files
 export DOCKER_GOLANG_VERSION="1.25.4"
-export DOCKER_GHA_RUNNER_VERSION="2.330.0"
-export DOCKER_CIMAN_GHA_RUNNER_DIR="$DOCKER_CIMAN_ROOT"/docker/gha-runner
+export DOCKER_GHA_RUNNER_VERSION="2.331.0"
+export DOCKER_DOT_GITHUB_GHA_RUNNER_DIR="$DOCKER_DOT_GITHUB_ROOT"/docker/gha-runner
 export DOCKER_GHA_RUNNER_DIR="$DOCKER_BUILD_DIR"/gha-runner
 
 docker_build_setup_ciman() {
-    if [ "$(dirname $CIMAN_ROOT)" != "$DOCKER_BUILD_DIR" ] ; then
-        echo_log "Updating $CIMAN_ROOT git submodules..."
-        pushd "$CIMAN_ROOT"
-        git submodule update --init --recursive
-        popd
+    if [ "$(dirname $DOT_GITHUB_ROOT)" != "$DOCKER_BUILD_DIR" ] ; then
         if [ -d "$DOCKER_BUILD_DIR" ] ; then
             echo_log "Removing existing DOCKER_BUILD_DIR: $DOCKER_BUILD_DIR..."
             local sudo_cmd=""
@@ -269,9 +265,9 @@ docker_build_setup_ciman() {
             fi
             ${sudo_cmd} rm -rf "$DOCKER_BUILD_DIR"
         fi
-        echo_log "Syncing $CIMAN_ROOT into $DOCKER_CIMAN_ROOT..."
+        echo_log "Syncing $DOT_GITHUB_ROOT into $DOCKER_DOT_GITHUB_ROOT..."
         mkdir -p "$DOCKER_BUILD_DIR"
-        rsync -a "$CIMAN_ROOT/." "$DOCKER_CIMAN_ROOT"
+        rsync -a "$DOT_GITHUB_ROOT/." "$DOCKER_DOT_GITHUB_ROOT"
     else
         mkdir -p "$DOCKER_BUILD_DIR"
     fi

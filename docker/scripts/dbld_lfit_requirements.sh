@@ -15,8 +15,8 @@
 
 set -euxo pipefail
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
-. "$CIMAN_DOCKER_SCRIPTS/lib_common.sh"
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_common.sh"
 
 must_be_run_in_docker_build
 
@@ -30,12 +30,6 @@ login \$pclogin
 password
 EOF
 
-# Copy lf-env.sh for LF Releng scripts
-lf_env_sh="/root/lf-env.sh"
-cp "$DOCKER_CIMAN_ROOT/global-jjb/jenkins-init-scripts/lf-env.sh" "$lf_env_sh"
-chmod 644 "$lf_env_sh"
-cat <<EOF >>"$lf_env_sh"
-
 # When running in CI docker image, use the pre-installed venv
 # instead of installing python packages every job run.
 #
@@ -45,7 +39,6 @@ lf-activate-venv() {
     PATH="\$LF_VENV/bin:\$PATH"
     return 0
 }
-EOF
 
 # Install lftools & boto3 for log / artifact upload.
 pip_options=""

@@ -20,8 +20,8 @@ if [ -n "$(alias lib_vpp_imported 2> /dev/null)" ] ; then
 fi
 alias lib_vpp_imported=true
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname "${BASH_SOURCE[0]}")"}
-. "$CIMAN_DOCKER_SCRIPTS"/lib_common.sh
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname "${BASH_SOURCE[0]}")"}
+. "$DOT_GITHUB_DOCKER_SCRIPTS"/lib_common.sh
 
 
 VPP_SUPPORTED_EXECUTOR_CLASSES="builder"
@@ -114,13 +114,6 @@ docker_build_setup_vpp() {
 
 # Branches must be listed in chronological order -- oldest stable branch
 # first and master last.
-#
-# Note: CI Jobs for each architecture are maintained in
-#       .../ci-management/jjb/vpp/vpp.yaml
-#       All OS's and branches are included in the 'os' and 'stream'
-#       definitions respectively, then the exclude list maintained
-#       to create an enumerated set of jobs jobs that match the
-#       definitions here.
 declare -A VPP_BRANCHES
 VPP_BRANCHES["debian-12"]="stable/2506 stable/2510 master"
 VPP_BRANCHES["ubuntu-22.04"]="stable/2506 stable/2510 master"

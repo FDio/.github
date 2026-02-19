@@ -15,8 +15,8 @@
 
 set -euxo pipefail
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
-source "$CIMAN_DOCKER_SCRIPTS/lib_csit.sh"
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
+source "$DOT_GITHUB_DOCKER_SCRIPTS/lib_csit.sh"
 
 must_be_run_in_docker_build
 
