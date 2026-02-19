@@ -21,10 +21,10 @@ logname="/tmp/$(basename $0).${DOCKER_DATE}.log"
 echo -e "\n*** Logging output to $logname ***\n\n"
 exec > >(tee -a $logname) 2>&1
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
-. "$CIMAN_DOCKER_SCRIPTS/lib_vpp.sh"
-. "$CIMAN_DOCKER_SCRIPTS/lib_csit.sh"
-. "$CIMAN_DOCKER_SCRIPTS/lib_apt.sh"
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_vpp.sh"
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_csit.sh"
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_apt.sh"
 
 all_os_names=""
 ci_tag=""
@@ -120,7 +120,7 @@ docker_build_setup_gha() {
     if [ -n "$gha_container" ] && vpp_supported_executor_class ; then
         rm -rf "$DOCKER_GHA_RUNNER_DIR"
         mkdir -p "$DOCKER_GHA_RUNNER_DIR"
-        cp "$DOCKER_CIMAN_GHA_RUNNER_DIR"/* "$DOCKER_GHA_RUNNER_DIR"
+        cp "$DOCKER_DOT_GITHUB_GHA_RUNNER_DIR"/* "$DOCKER_GHA_RUNNER_DIR"
         pushd "$DOCKER_GHA_RUNNER_DIR"
         local gha_runner_tarball="actions-runner-linux-${GHA_ARCH}-${DOCKER_GHA_RUNNER_VERSION}.tar.gz"
         wget -q https://github.com/actions/runner/releases/download/v${DOCKER_GHA_RUNNER_VERSION}/"$gha_runner_tarball"

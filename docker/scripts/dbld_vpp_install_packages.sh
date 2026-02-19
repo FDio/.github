@@ -15,9 +15,9 @@
 
 set -euxo pipefail
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname "${BASH_SOURCE[0]}")"}
-. "$CIMAN_DOCKER_SCRIPTS/lib_vpp.sh"
-. "$CIMAN_DOCKER_SCRIPTS/lib_apt.sh"
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname "${BASH_SOURCE[0]}")"}
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_vpp.sh"
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_apt.sh"
 
 must_be_run_in_docker_build
 

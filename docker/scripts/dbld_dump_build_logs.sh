@@ -15,9 +15,9 @@
 
 set -euxo pipefail
 
-export CIMAN_DOCKER_SCRIPTS=${CIMAN_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
-export CIMAN_ROOT=${CIMAN_ROOT:-"$(dirname $(dirname $CIMAN_DOCKER_SCRIPTS))"}
-. "$CIMAN_DOCKER_SCRIPTS/lib_common.sh"
+export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_SOURCE)"}
+export DOT_GITHUB_ROOT=${DOT_GITHUB_ROOT:-"$(dirname $(dirname $DOT_GITHUB_DOCKER_SCRIPTS))"}
+. "$DOT_GITHUB_DOCKER_SCRIPTS/lib_common.sh"
 
 must_be_run_in_docker_build
 
