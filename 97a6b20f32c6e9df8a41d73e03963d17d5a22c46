@@ -16,6 +16,24 @@
       "message": "have you consider crontab instead of tmux?",
       "revId": "97a6b20f32c6e9df8a41d73e03963d17d5a22c46",
       "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fe4847f7_bcb89f0b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 10
+      },
+      "writtenOn": "2026-03-10T22:17:21Z",
+      "side": 1,
+      "message": "tmux is easier wrt reviewing the history which I still do daily as the orphan gc is not 100%.  Sometimes it doesn\u0027t get the right log output and I have to clean up a few jobs manually via the web UI.  This is fine as an interim solution, which is the intention here until the dispatcher can do this same functionality.\n\nIf it is going to be a long term solution, then crontab configuration via ansible would definitely be preferred.",
+      "parentUuid": "1d05b64b_46a05fab",
+      "revId": "97a6b20f32c6e9df8a41d73e03963d17d5a22c46",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
     }
   ]
 }
