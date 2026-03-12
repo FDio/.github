@@ -108,8 +108,8 @@ format_image_tags() {
     # Note: 'grep $image_arch' & grep -v 'prod-curr' is required due to a
     #       bug in docker hub which returns old tags which were deleted via
     #       the webUI, but are still retrieved by 'docker pull -a'
-    image_tags="$(docker images | grep $1 | grep $image_arch | grep -v prod-curr | sort -r | mawk '{print $1":"$2}' | tr '\n' ' ')"
-    image_realname="$(docker images | grep $1 | grep $image_arch | sort -r | grep -v prod | mawk '{print $1":"$2}' || true)"
+    image_tags="$(docker image ls --format '{{.Repository}}:{{.Tag}} ${{.ID}}' | grep $1 | grep $image_arch | grep -v prod-curr | sort -r | mawk '{print $1}' | tr '\n' ' ')"
+    image_realname="$(docker image ls --format '{{.Repository}}:{{.Tag}} ${{.ID}}' | grep $1 | grep $image_arch | sort -r | grep -v prod | mawk '{print $1}' || true)"
     if [ -z "${image_realname:-}" ] ; then
         image_realname="$image_tags"
     fi
@@ -122,7 +122,7 @@ get_image_id_tags() {
         fi
         # ensure image exists
         set +e
-        local image_found="$(docker images | mawk '{print $1":"$2}' | grep $image)"
+        local image_found="$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep $image)"
         set -e
         if [ -z "$image_found" ] ; then
             if [ "$image" = "$image_name_prev" ] ; then
