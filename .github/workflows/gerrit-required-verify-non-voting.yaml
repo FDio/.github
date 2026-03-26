@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clear votes
-        uses: lfit/gerrit-review-action@v0.4
+        uses: lfit/gerrit-review-action@3a1b27891502e0786a3e2e5a2d0cb0bff1f30c25  # v1.0.0
         with:
           host: ${{ vars.GERRIT_SERVER }}
           username: ${{ vars.GERRIT_SSH_REQUIRED_USER }}
@@ -94,9 +94,9 @@ jobs:
     needs: [prepare, info-yaml-verify]
     runs-on: ubuntu-latest
     steps:
-      - uses: technote-space/workflow-conclusion-action@v3
+      - uses: technote-space/workflow-conclusion-action@45ce8e0eb155657ab8ccf346ade734257fd196a5  # v3.0.3 archived Nov 16, 2023
       - name: Set vote
-        uses: lfit/gerrit-review-action@v0.4
+        uses: lfit/gerrit-review-action@3a1b27891502e0786a3e2e5a2d0cb0bff1f30c25  # v1.0.0
         with:
           host: ${{ vars.GERRIT_SERVER }}
           username: ${{ vars.GERRIT_SSH_REQUIRED_USER }}
