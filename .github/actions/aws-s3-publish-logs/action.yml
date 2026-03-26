@@ -70,7 +70,7 @@ runs:
 
     - name: Cache or Restore the zip
       if: ${{ steps.aws-binary-check.outputs.AWS_CLI_PREINSTALLED == 'false' }}
-      uses: actions/cache@v4
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7  # v5.0.4
       id: aws-cli-cache
       with:
         path: ${{ runner.temp }}/aws-cli-cache/*.zip
@@ -102,7 +102,8 @@ runs:
         rm -rf ./aws
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v5.0.0
+      # yamllint disable-line rule:line-length
+      uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7  # v6.0.0
       with:
         aws-access-key-id: ${{ inputs.aws_access_key_id }}
         aws-secret-access-key: ${{ inputs.aws_secret_access_key }}

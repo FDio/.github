@@ -68,7 +68,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
 
       - name: Checkpoint Gerrit Variables
         uses: ./.github/actions/gerrit-env-vars-checkpoint
@@ -82,7 +82,7 @@ jobs:
           echo "Project: $(cat fdio-gerrit-vars/gerrit-project)"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
         with:
           name: gerrit-variables
           path: fdio-gerrit-vars/
@@ -113,7 +113,7 @@ The action automatically uploads the `fdio-gerrit-vars/` directory as a workflow
 - Used by downstream workflows (especially useful with `workflow_run` triggers)
 - Retrieved via the GitHub API for external processing
 
-The upload uses `actions/upload-artifact@v4` with `if-no-files-found: error` to ensure the checkpoint operation succeeded.
+The upload uses `actions/upload-artifact@v7` with `if-no-files-found: error` to ensure the checkpoint operation succeeded.
 
 ## �🔍 Console Output
 
