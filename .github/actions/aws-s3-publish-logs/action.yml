@@ -50,12 +50,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Publish Link
-      shell: bash
-      run: |
-        echo "S3 URL:"
-        echo "::notice:: ${{ inputs.s3_url }}/${{ inputs.s3_path }}"
-
     - name: Check if AWS CLI is pre-installed
       id: aws-binary-check
       shell: bash
