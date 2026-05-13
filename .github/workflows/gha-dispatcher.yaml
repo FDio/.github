@@ -1,8 +1,16 @@
 ---
 # gha-dispatcher.yaml
-name: GitHub Actions for gha-dispatcher
+name: GHCR gha-dispatcher
 
 "on":
+  push:
+    paths:
+      - "docker/gha-dispatcher/**"
+      - "docker/gha-dispatcher/*"
+  pull_request:
+    paths:
+      - "docker/gha-dispatcher/**"
+      - "docker/gha-dispatcher/*"
   workflow_dispatch:
 
 env:
@@ -60,12 +68,9 @@ jobs:
         id: metadata_inputs
         shell: bash
         run: |
-          set -euo pipefail
-
           image_dir="docker/${{ matrix.image }}"
           tags_file="${image_dir}/TAGS"
           labels_file="${image_dir}/LABELS"
-          semver_re='^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
 
           trim() {
             local value="${1%%#*}"
@@ -90,7 +95,7 @@ jobs:
             while IFS= read -r version || [[ -n "${version}" ]]; do
               version="$(trim "${version}")"
               [[ -z "${version}" ]] && continue
-              if [[ ! "${version}" =~ ${semver_re} ]]; then
+              if [[ ! "${version}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
                 echo "::error file=${tags_file}::Invalid semver tag '${version}'"
                 exit 1
               fi
