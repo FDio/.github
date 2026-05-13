@@ -1,0 +1,15 @@
+[project]
+name = "python-gha-dispatcher"
+version = "0.1.0"
+description = "Python tool to dispatch Nomad Jobs based on GitHub REST API."
+authors = [
+    {name = "Peter Mikus"},
+]
+requires-python = ">=3.13"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "requests>=2.32.5",
+]

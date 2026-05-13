@@ -1,0 +1,5 @@
+org.opencontainers.image.title=gha-dispatcher
+org.opencontainers.image.description=GitHub Actions Dispatcher on HashiCorp Nomad
+org.opencontainers.image.vendor=FD.io
+org.opencontainers.image.authors=FD.io
+org.opencontainers.image.licenses=MIT

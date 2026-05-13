@@ -1,0 +1,141 @@
+---
+# gha-dispatcher.yaml
+name: GitHub Actions for gha-dispatcher
+
+"on":
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: fdio
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-job:
+    # Build job running on Nomad.
+    name: Build Docker Images
+
+    runs-on:
+      - ubuntu-latest
+
+    strategy:
+      matrix:
+        image:
+          - gha-dispatcher
+        target:
+          - sandbox
+          - prod
+          - dev
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Cache Docker layers
+        id: actions_cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Authenticate to registry
+        id: login
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Docker metadata inputs
+        id: metadata_inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          image_dir="docker/${{ matrix.image }}"
+          tags_file="${image_dir}/TAGS"
+          labels_file="${image_dir}/LABELS"
+          semver_re='^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+
+          trim() {
+            local value="${1%%#*}"
+            value="${value//$'\r'/}"
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            printf '%s' "${value}"
+          }
+
+          if [[ ! -f "${tags_file}" ]]; then
+            echo "::error file=${tags_file}::Missing Docker tag metadata file"
+            exit 1
+          fi
+
+          if [[ ! -f "${labels_file}" ]]; then
+            echo "::error file=${labels_file}::Missing Docker label metadata file"
+            exit 1
+          fi
+
+          {
+            echo "tags<<EOF"
+            while IFS= read -r version || [[ -n "${version}" ]]; do
+              version="$(trim "${version}")"
+              [[ -z "${version}" ]] && continue
+              if [[ ! "${version}" =~ ${semver_re} ]]; then
+                echo "::error file=${tags_file}::Invalid semver tag '${version}'"
+                exit 1
+              fi
+              echo "type=semver,pattern={{version}},value=${version}"
+              echo "type=semver,pattern={{major}}.{{minor}},value=${version}"
+            done < "${tags_file}"
+            echo "type=raw,value=latest,enable={{is_default_branch}}"
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+          {
+            echo "labels<<EOF"
+            while IFS= read -r label || [[ -n "${label}" ]]; do
+              label="$(trim "${label}")"
+              [[ -z "${label}" ]] && continue
+              if [[ ! "${label}" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*=.+$ ]]; then
+                echo "::error file=${labels_file}::Invalid label '${label}'"
+                exit 1
+              fi
+              echo "${label}"
+            done < "${labels_file}"
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Docker meta
+        id: metadata
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}-${{ matrix.target }}
+          labels: ${{ steps.metadata_inputs.outputs.labels }}
+          tags: ${{ steps.metadata_inputs.outputs.tags }}
+
+      - name: Build and push
+        id: bake
+        uses: docker/bake-action@v6
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          files: |
+            ./docker-bake.hcl
+            cwd://${{ steps.metadata.outputs.bake-file }}
+          load: ${{ github.event_name == 'pull_request' }}
+          provenance: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' }}
+          sbom: ${{ github.event_name != 'pull_request' }}
+          source: .
+          targets: ${{ matrix.target }}
+          workdir: ./docker/${{ matrix.image }}
