@@ -224,7 +224,7 @@ def nomad_system_gc() -> None:
     """
     try:
         url = f"{Config().nomad_addr}/v1/system/gc"
-        response = requests.delete(url=url, timeout=10)
+        response = requests.put(url=url, timeout=10)
         if response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as e:
@@ -349,7 +349,7 @@ def trigger_garbage_collector() -> None:
                         r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z):", errs).group(1)
                     log = datetime.strptime(dmatch, fmt).replace(tzinfo=timezone.utc)
                     if (now - log).total_seconds() > 3600.0:
-                        print("Purging", alloc["JobID"])
+                        logging.info("Purging", alloc["JobID"])
                         nomad_purge_job(alloc["JobID"])
         except CalledProcessError as e:
             logging.info(f"Nomad job failed: {e.stderr}")
