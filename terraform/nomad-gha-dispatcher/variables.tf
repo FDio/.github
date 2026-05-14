@@ -58,25 +58,25 @@ variable "dispatchers" {
       id         = 3
       namespace  = "prod"
       repository = "fdio-csit"
-      version    = "2.6.2"
+      version    = "2.6.3"
     },
     {
       id         = 4
       namespace  = "prod"
       repository = "fdio-vpp"
-      version    = "2.6.2"
+      version    = "2.6.3"
     },
     {
       id         = 5
       namespace  = "sandbox"
       repository = "fdio-csit"
-      version    = "2.6.2"
+      version    = "2.6.3"
     },
     {
       id         = 6
       namespace  = "sandbox"
       repository = "fdio-vpp"
-      version    = "2.6.2"
+      version    = "2.6.3"
     }
   ]
 }
