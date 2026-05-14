@@ -14,7 +14,7 @@ variable "cpu" {
 variable "image" {
   description = "Specifies the Docker image to run."
   type        = string
-  default     = "pmikus/docker-gha-dispatcher"
+  default     = "ghcr.io/fdio/gha-dispatcher"
 }
 
 variable "job_name" {
@@ -58,25 +58,25 @@ variable "dispatchers" {
       id         = 3
       namespace  = "prod"
       repository = "fdio-csit"
-      version    = "2.6"
+      version    = "2.6.2"
     },
     {
       id         = 4
       namespace  = "prod"
       repository = "fdio-vpp"
-      version    = "2.6"
+      version    = "2.6.2"
     },
     {
       id         = 5
       namespace  = "sandbox"
       repository = "fdio-csit"
-      version    = "2.6"
+      version    = "2.6.2"
     },
     {
       id         = 6
       namespace  = "sandbox"
       repository = "fdio-vpp"
-      version    = "2.6"
+      version    = "2.6.2"
     }
   ]
 }
