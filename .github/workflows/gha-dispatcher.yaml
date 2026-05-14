@@ -53,6 +53,7 @@ jobs:
 
       - name: Set up Docker Buildx
         id: buildx
+        # yamllint disable-line rule:line-length
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Authenticate to registry
@@ -67,6 +68,7 @@ jobs:
       - name: Prepare Docker metadata inputs
         id: metadata_inputs
         shell: bash
+        # yamllint disable rule:line-length
         run: |
           image_dir="docker/${{ matrix.image }}"
           tags_file="${image_dir}/TAGS"
@@ -119,15 +121,19 @@ jobs:
             done < "${labels_file}"
             echo "EOF"
           } >> "${GITHUB_OUTPUT}"
+        # yamllint enable rule:line-length
 
       - name: Docker meta
         id: metadata
+        # yamllint disable-line rule:line-length
         uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
+          # yamllint disable rule:line-length
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}-${{ matrix.target }}
           labels: ${{ steps.metadata_inputs.outputs.labels }}
           tags: ${{ steps.metadata_inputs.outputs.tags }}
+          # yamllint enable rule:line-length
 
       - name: Build and push
         id: bake

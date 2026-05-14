@@ -26,7 +26,7 @@ class Config:
     gh_account: str = os.getenv("GITHUB_ACCOUNT", "repos")
     gh_pat: str = os.getenv("GITHUB_PAT", "")
     gh_repo: str = os.getenv("GITHUB_REPO", "pmikus/gha-nomad-docker")
-    gh_namespace: str = os.getenv("GITHUB_LABEL_NAMESPACE", "acme")
+    gh_namespace: str = os.getenv("GITHUB_LABEL_NAMESPACE", "fdio")
     nomad_addr: str = os.getenv("NOMAD_ADDR", "http://10.30.51.24:4646")
     nomad_namespace: str = os.getenv("NOMAD_NAMESPACE", "prod")
 
@@ -53,7 +53,7 @@ class ResourceSize(str, Enum):
         if cls is cls.VPP:
             return "24000"
         elif cls is cls.CSIT:
-            return "8000"
+            return "16000"
         elif cls is cls.HST:
             return "262144"
         else:
@@ -65,7 +65,7 @@ class ResourceSize(str, Enum):
         if cls is cls.VPP:
             return "24000"
         elif cls is cls.CSIT:
-            return "8192"
+            return "16384"
         elif cls is cls.HST:
             return "128000"
         else:
@@ -138,6 +138,46 @@ def parse_labels(labels: List[str]) -> Dict[str, str]:
     return parsed
 
 
+def nomad_allocations() -> dict:
+    """
+    Get All Nomad allocations that are in running state.
+    """
+    try:
+        url = f"{Config().nomad_addr}/v1/allocations"
+        params = {
+            "namespace": Config().nomad_namespace,
+            "task_states": "false",
+            "resources": "false"
+        }
+        response = requests.get(url=url, params=params, timeout=10)
+        if response.ok:
+            response.raise_for_status()
+            return [
+                alloc for alloc in response.json() if alloc["JobType"] == \
+                "batch" and alloc["ClientStatus"] == "running"
+            ]
+    except requests.exceptions.RequestException as e:
+        on_failure(f"An error occurred during the request: {e}")
+
+
+def nomad_jobs() -> dict:
+    """
+    Get All Nomad jobs of batch type.
+    """
+    try:
+        url = f"{Config().nomad_addr}/v1/jobs"
+        params = {
+            "namespace": Config().nomad_namespace,
+            "prefix": "gha-"
+        }
+        response = requests.get(url=url, params=params, timeout=10)
+        if response.ok:
+            response.raise_for_status()
+            return [job for job in response.json() if job["Type"] == "batch"]
+    except requests.exceptions.RequestException as e:
+        on_failure(f"An error occurred during the request: {e}")
+
+
 def nomad_job_allocations(job_id: str) -> str:
     """
     Get Nomad allocations for specified job ID.
@@ -177,43 +217,16 @@ def nomad_purge_job(job_id: str) -> None:
     except requests.exceptions.RequestException as e:
         on_failure(f"An error occurred during the request: {e}")
 
-
-def nomad_allocations() -> dict:
+def nomad_system_gc() -> None:
     """
-    Get All Nomad allocations that are in running state.
-    """
-    try:
-        url = f"{Config().nomad_addr}/v1/allocations"
-        params = {
-            "namespace": Config().nomad_namespace,
-            "task_states": "false",
-            "resources": "false"
-        }
-        response = requests.get(url=url, params=params, timeout=10)
-        if response.ok:
-            response.raise_for_status()
-            return [
-                alloc for alloc in response.json() if alloc["JobType"] == \
-                "batch" and alloc["ClientStatus"] == "running"
-            ]
-    except requests.exceptions.RequestException as e:
-        on_failure(f"An error occurred during the request: {e}")
-
-
-def nomad_jobs() -> dict:
-    """
-    Get All Nomad jobs of batch type.
+    Initializes a garbage collection of jobs, evaluations, allocations, and
+    nodes.
     """
     try:
-        url = f"{Config().nomad_addr}/v1/jobs"
-        params = {
-            "namespace": Config().nomad_namespace,
-            "prefix": "gha-"
-        }
-        response = requests.get(url=url, params=params, timeout=10)
+        url = f"{Config().nomad_addr}/v1/system/gc"
+        response = requests.delete(url=url, timeout=10)
         if response.ok:
             response.raise_for_status()
-            return [job for job in response.json() if job["Type"] == "batch"]
     except requests.exceptions.RequestException as e:
         on_failure(f"An error occurred during the request: {e}")
 
@@ -341,6 +354,7 @@ def trigger_garbage_collector() -> None:
         except CalledProcessError as e:
             logging.info(f"Nomad job failed: {e.stderr}")
             pass
+    nomad_system_gc()
 
 
 def on_success(response: requests.Response) -> None:
