@@ -115,7 +115,7 @@ docker_build_setup_vpp() {
 # Branches must be listed in chronological order -- oldest stable branch
 # first and master last.
 declare -A VPP_BRANCHES
-VPP_BRANCHES["debian-12"]="stable/2506 stable/2510 master"
-VPP_BRANCHES["ubuntu-22.04"]="stable/2506 stable/2510 master"
-VPP_BRANCHES["ubuntu-24.04"]="stable/2506 stable/2510 master"
+VPP_BRANCHES["debian-12"]="stable/2602 stable/2606 master"
+VPP_BRANCHES["ubuntu-22.04"]="stable/2602 stable/2606 master"
+VPP_BRANCHES["ubuntu-24.04"]="stable/2602 stable/2606 master"
 export VPP_BRANCHES
