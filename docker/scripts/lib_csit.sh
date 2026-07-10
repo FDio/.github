@@ -28,7 +28,7 @@ export DOT_GITHUB_DOCKER_SCRIPTS="${DOT_GITHUB_DOCKER_SCRIPTS:-$(dirname ${BASH_
 # first and master last.
 #
 declare -A CSIT_VPP_BRANCHES
-CSIT_VPP_BRANCHES["ubuntu-24.04"]="stable/2506 stable/2510 master"
+CSIT_VPP_BRANCHES["ubuntu-24.04"]="stable/2602 stable/2606 master"
 export CSIT_VPP_BRANCHES
 
 CSIT_SUPPORTED_EXECUTOR_CLASSES="builder csit_dut"
