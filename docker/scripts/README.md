@@ -4,11 +4,11 @@ This collection of bash scripts and libraries is used to automate the process
 of building FD.io docker 'builder' images (aka Nomad executors). The goal is to
 create a completely automated CI/CD pipeline. The bash code is designed to be
 run in a regular Linux bash shell in order to bootstrap the CI/CD pipeline
-as well as in a docker 'builder' image started by a ci-management jenkins job.
+as well as in a docker 'gha' image started by a GitHub Actions workflow.
 The Dockerfile is generated prior to executing 'docker build' based on the os
 parameter specified.  The project git repos are also copied into the docker
-container and retained for optimization of git object retrieval by the Jenkins
-jobs running the CI/CD tasks.
+container and retained for optimization of git object retrieval by the GitHub
+Actions workflows running the CI/CD tasks.
 
 ## Image Builder Algorithm
 
@@ -19,7 +19,7 @@ the executor image is as follows:
 1. Run the docker image builder on a host of the target architecture.  Bootstrap
    images will be built 'by hand' on target hosts until such a time when the
    CI is capable of executing the docker image builder scripts inside docker
-   images running on Nomad instances via jenkins jobs.
+   images running on Nomad instances.
 
 2. For each OS package manager, there is a bash function which generates the
    Dockerfile for the specified OS which uses said package manager. For example,
@@ -174,25 +174,24 @@ separate hosts in parallel.
 Note: the 'prod' role is disallowed in the build script to prevent accidental
 deployment of untested docker images to production.
 
-### Test Docker Images in the Jenkins Sandbox
+### Test Docker Images in the GitHub Actions workflows with the sandbox Namespace.
 
 In the future, this step will be automated using the role 'test' and associated
 tags, but for now testing is a manual operation.
 
-1. `git clone https://gerrit.fd.io/r/vpp ../vpp && source ../vpp/extras/bash/functions.sh`
+1. Manually run the gerrit-merge workflow in the GitHub UI against the CI test
+gerrit change: "misc: patch to test CI infra" on the master branch and the
+current supported release branches.
 
-2. Edit jjb/vpp/vpp.yam (or other project yaml file) and replace '-prod-' with '-sandbox-' for all of the docker image
+2. Inspect the console output of each job for the correct Dockerfile version, and
+unnecessary downloads or errors.
 
-3. `jjb-sandbox-env`
+3. Manually run the gerrit-verify workflow in the GitHub UI against the CI test
+gerrit change: "misc: patch to test CI infra" on the master branch and the
+current supported release branches.
 
-4. For each job using one of the docker images:
-
-   a. `jjsb-update <job name(s)>` # bash function created by jjb-sandbox-env to
-   push job to the sandbox
-
-   b. manually run the job in https://jenkins.fd.io/sandbox
-
-   c. Inspect the console output of each job for unnecessary downloads & errors.
+4. Inspect the console output of each job for the correct Dockerfile version, and
+unnecessary downloads or errors.
 
 ### Promote Docker Images to Production
 
@@ -237,7 +236,7 @@ writes a copy of all of the terminal output to a log file in
 /tmp/build_executor_docker_image.sh.<date>.log thus providing a history of the
 restore commands. When the building of executor docker images is peformed by a
 CI job, the logging can be removed since the job execution will be captured in
-the Jenkins console output log.
+the GitHub Actions workflow console output log.
 
 ### Docker Image Garbage Collection
 
@@ -256,14 +255,14 @@ script will be written to automate the process.
 ## Docker Image Tags
 
 - prod-x86_64: Tag used to select the x86_64 production image by the associated
-Jenkins-Nomad Label.
+Nomad Label.
 - prod-prev-x86_64: Tag of the previous x86_64 production image used to revert
 a production image to the previous image used in production.
 - prod-aarch64: Tag used to select the aarch64 production image by the
-associated Jenkins-Nomad Label.
+associated Nomad Label.
 - prod-prev-aarch64 Tag of the previous aarch64 production image used to revert
 a production image to the previous image used in production.
 - sandbox-x86_64: Tag used to select the x86_64 sandbox image by the associated
-Jenkins-Nomad Label.
+Nomad Label.
 - sandbox-aarch64: Tag used to select the aarch64 sandbox image by the
-associated Jenkins-Nomad Label.
+associated Nomad Label.
