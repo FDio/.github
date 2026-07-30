@@ -41,8 +41,10 @@ lf-activate-venv() {
 }
 
 # Install lftools & boto3 for log / artifact upload.
+# Distros implementing PEP 668 mark the system Python as externally-managed,
+# requiring --break-system-packages for system-wide pip installs.
 pip_options=""
-if [ "$OS_CODENAME" = "noble" ] || [ "$OS_CODENAME" = "bookworm" ] ; then
+if ls /usr/lib/python3*/EXTERNALLY-MANAGED >/dev/null 2>&1 ; then
     pip_options=" --break-system-packages"
 fi
 python3 -m pip install$pip_options boto3
