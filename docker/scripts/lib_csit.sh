@@ -29,6 +29,7 @@ export DOT_GITHUB_DOCKER_SCRIPTS="${DOT_GITHUB_DOCKER_SCRIPTS:-$(dirname ${BASH_
 #
 declare -A CSIT_VPP_BRANCHES
 CSIT_VPP_BRANCHES["ubuntu-24.04"]="stable/2602 stable/2606 master"
+CSIT_VPP_BRANCHES["ubuntu-26.04"]="stable/2606"
 export CSIT_VPP_BRANCHES
 
 CSIT_SUPPORTED_EXECUTOR_CLASSES="builder csit_dut"
@@ -41,7 +42,7 @@ csit_supported_executor_class() {
 
 csit_supported_os() {
     case "$1" in
-        ubuntu-24.04) return 0 ;;
+        ubuntu-24.04|ubuntu-26.04) return 0 ;;
                    *) ;;
     esac
     return 1
@@ -83,6 +84,7 @@ csit_install_packages() {
     local yaml_files
     yaml_files="$(grep -r packages_by $csit_ansible_dir | cut -d: -f1 | sort -u | grep -v $exclude_roles)"
     packages="$(dbld_csit_find_ansible_packages.py --$OS_ID --$OS_ARCH $yaml_files)"
+    packages="${packages/resolute /}"
     packages="${packages/jammy /}"
     packages="${packages/focal /}"
     packages="${packages/noble /}"
