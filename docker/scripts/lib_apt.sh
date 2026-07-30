@@ -30,6 +30,9 @@ select_dind_image() {
         "ubuntu:24.04")
             echo "cruizba/ubuntu-dind:noble-28.2.1|true"
             ;;
+        "ubuntu:26.04")
+            echo "cruizba/ubuntu-dind:resolute-29.6.0|true"
+            ;;
         *)
             echo "$input_image|false"
             ;;
@@ -116,6 +119,7 @@ RUN apt-get update -qq \\
              gfortran \\
              git \\
              git-review \\
+             gnupg \\
              gnupg-agent \\
              graphviz \\
              iproute2 \\
@@ -144,9 +148,19 @@ RUN apt-get update -qq \\
              wget \\
              xmlstarlet \\
              xz-utils \\
-  && curl -L https://packagecloud.io/fdio/master/gpgkey | apt-key add - \\
-  && curl -s https://packagecloud.io/install/repositories/fdio/master/script.deb.sh | bash \\
-  && rm -r /var/lib/apt/lists/*
+  && install -m 0755 -d /etc/apt/keyrings \\
+  && curl -fsSL https://packagecloud.io/fdio/master/gpgkey \\
+       | gpg --dearmor -o /etc/apt/keyrings/fdio_master-archive-keyring.gpg \\
+  && chmod 0644 /etc/apt/keyrings/fdio_master-archive-keyring.gpg \\
+  && . /etc/os-release \\
+  && fdio_repo="https://packagecloud.io/fdio/master/\${ID}" \\
+  && if curl -fsSL -o /dev/null "\${fdio_repo}/dists/\${VERSION_CODENAME}/Release" ; then \\
+         echo "deb [signed-by=/etc/apt/keyrings/fdio_master-archive-keyring.gpg] \${fdio_repo}/ \${VERSION_CODENAME} main" \\
+              > /etc/apt/sources.list.d/fdio_master.list ; \\
+     else \\
+         echo "WARNING: fd.io packagecloud repo not yet published for \${ID}/\${VERSION_CODENAME}; skipping fd.io apt source" ; \\
+     fi \\
+  && rm -rf /var/lib/apt/lists/*
 
 # Install terraform for CSIT
 #
@@ -222,8 +236,7 @@ RUN apt-get update -qq \\
   && rm -r /var/lib/apt/lists/*
 
 # Install packagecloud requirements
-RUN gem install rake package_cloud \\
-  && curl -s https://packagecloud.io/install/repositories/fdio/master/script.deb.sh | bash
+RUN gem install rake package_cloud
 
 # Install CSIT ssh requirements
 # TODO: Verify why badkey is required & figure out how to avoid it.
