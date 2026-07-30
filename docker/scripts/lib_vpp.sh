@@ -115,7 +115,7 @@ docker_build_setup_vpp() {
                 cp -a "$DOCKER_DOWNLOADS_DIR"/* "$DOCKER_VPP_DL_CACHE_DIR" || true
             fi
         fi
-        if [ -f "$DOCKER_BUILD_COVERITY_TARBALL" ]; then
+        if [ "$OS_ARCH" = "x86_64" ] && [ -f "$DOCKER_BUILD_COVERITY_TARBALL" ] ; then
             rm -rf "$DOCKER_BLACK_DUCK_DIR"
             mkdir -p "$DOCKER_BLACK_DUCK_DIR"
             pushd "$DOCKER_BLACK_DUCK_DIR"
@@ -133,4 +133,5 @@ declare -A VPP_BRANCHES
 VPP_BRANCHES["debian-12"]="stable/2606 stable/2610 master"
 VPP_BRANCHES["ubuntu-22.04"]="stable/2606 stable/2610 master"
 VPP_BRANCHES["ubuntu-24.04"]="stable/2606 stable/2610 master"
+VPP_BRANCHES["ubuntu-26.04"]="master"
 export VPP_BRANCHES
