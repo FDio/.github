@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "80bf1a9a_843c069d",
+        "filename": "docker/scripts/lib_apt.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 10
+      },
+      "writtenOn": "2026-08-18T18:56:20Z",
+      "side": 1,
+      "message": "noble and jammy should be the upgraded to the same version as resolute.\n\nIIRC, there was an issue the last time I tried to upgrade the dind image, so it may be better to upgrade noble \u0026 jammy in a separate gerrit change to be merged prior to this one.  I will incorporate that into my gerrit change which adds coverity build tools.",
+      "range": {
+        "startLine": 34,
+        "startChar": 47,
+        "endLine": 34,
+        "endChar": 53
+      },
+      "revId": "e19925a2b6462cd206c6b9584cfa63bf98b21a9a",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8fe4a424_fffc2f64",
+        "filename": "docker/scripts/lib_csit.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 10
+      },
+      "writtenOn": "2026-08-18T18:56:20Z",
+      "side": 1,
+      "message": "This should be \u0027master\u0027 since CSIT will never support previous releases with 26.04",
+      "range": {
+        "startLine": 32,
+        "startChar": 35,
+        "endLine": 32,
+        "endChar": 46
+      },
+      "revId": "e19925a2b6462cd206c6b9584cfa63bf98b21a9a",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1e913b49_a00dc876",
+        "filename": "docker/scripts/lib_csit.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 10
+      },
+      "writtenOn": "2026-08-18T18:56:20Z",
+      "side": 1,
+      "message": "CSIT does not support multiple OS versions.  This is fine for the transition period, but a TODO comment should be added as a reminder to remove 24.04 once the CSIT perf testbed upgrade is complete.",
+      "range": {
+        "startLine": 45,
+        "startChar": 8,
+        "endLine": 45,
+        "endChar": 21
+      },
+      "revId": "e19925a2b6462cd206c6b9584cfa63bf98b21a9a",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b318a505_bcea1c25",
+        "filename": "docker/scripts/lib_vpp.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 10
+      },
+      "writtenOn": "2026-08-18T18:56:20Z",
+      "side": 1,
+      "message": "This should be \"master\".  Stable branches won\u0027t be upgraded to support ubuntu 26.04",
+      "range": {
+        "startLine": 121,
+        "startChar": 30,
+        "endLine": 121,
+        "endChar": 41
+      },
+      "revId": "e19925a2b6462cd206c6b9584cfa63bf98b21a9a",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    }
+  ]
+}
