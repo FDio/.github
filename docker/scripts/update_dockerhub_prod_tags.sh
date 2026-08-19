@@ -368,7 +368,7 @@ case "$1" in
         usage ;;
 esac
 shift
-docker login >& /dev/null
+do_docker_login
 
 # Update local tags
 tags_to_push=""

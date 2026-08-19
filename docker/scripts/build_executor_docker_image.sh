@@ -28,7 +28,6 @@ export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_S
 
 all_os_names=""
 ci_tag=""
-ci_image=""
 gha_ci_image=""
 os_names=""
 push_to_docker_hub=""
@@ -52,7 +51,7 @@ usage() {
 }
 
 must_be_run_as_root_or_docker_group
-while getopts ":a:c:dhpr:" opt; do
+while getopts ":ac:dhpr:" opt; do
     case "$opt" in
         a)  all_os_names="1" ;;
         c) if executor_verify_class "$OPTARG" ; then
@@ -155,7 +154,7 @@ for executor_os_name in $os_names ; do
         cat "$DOCKERFILE"
         echo -e "$line\n"
     else
-        docker login
+        do_docker_login
         docker build -t "$executor_docker_image" "$DOCKER_BUILD_DIR"
         rm -f "$DOCKERFILE"
         gha_docker_image="${executor_docker_image/$EXECUTOR_CLASS/gha}"
@@ -171,7 +170,7 @@ for executor_os_name in $os_names ; do
           "${DOCKER_GHA_RUNNER_DIR}"
          popd
         if [ -n "$ci_tag" ] ; then
-            gha_ci_image="${ci_image/$EXECUTOR_CLASS/gha}"
+            gha_ci_image="$repository:$ci_tag"
             echo -e "\nAdding docker tag $gha_ci_image to $gha_docker_image"
             docker tag "$gha_docker_image" "$gha_ci_image"
         fi
