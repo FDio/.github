@@ -155,7 +155,7 @@ for executor_os_name in $os_names ; do
         cat "$DOCKERFILE"
         echo -e "$line\n"
     else
-        docker login
+        do_docker_login
         docker build -t "$executor_docker_image" "$DOCKER_BUILD_DIR"
         rm -f "$DOCKERFILE"
         gha_docker_image="${executor_docker_image/$EXECUTOR_CLASS/gha}"

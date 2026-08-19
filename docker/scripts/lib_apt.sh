@@ -157,6 +157,7 @@ RUN wget https://releases.hashicorp.com/terraform/1.7.3/terraform_1.7.3_linux_$d
 EOF
 
     generate_apt_dockerfile_install_golang
+    generate_apt_dockerfile_setup_coverity
 
     cat <<EOF >>"$DOCKERFILE"
 
@@ -202,6 +203,20 @@ RUN rm -rf /usr/local/go /usr/bin/go \\
     && echo -n "\nGOPATH=\$GOPATH\nGOROOT=\$GOROOT" | tee -a /etc/environment \\
     && mkdir -p "\$GOPATH/src" "\$GOPATH/bin" && chmod -R 777 "\$GOPATH"
 EOF
+}
+
+generate_apt_dockerfile_setup_coverity() {
+    if [ -d "${DOCKER_BLACK_DUCK_BIN-}" ] ; then
+    cat <<EOF >>"$DOCKERFILE"
+
+# Set Coverity build tools for static analysis
+#
+ENV BLACK_DUCK_BIN="\$DOCKER_BLACK_DUCK_BIN"
+ENV PATH \$DOCKER_BLACK_DUCK_BIN:\$PATH
+EOF
+    else
+        echo "WARNING: Coverity static analysis tools not installed!"
+    fi
 }
 
 # Generate 'builder' class apt dockerfile

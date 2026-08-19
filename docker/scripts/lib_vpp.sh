@@ -108,6 +108,13 @@ docker_build_setup_vpp() {
                 cp -a "$DOCKER_DOWNLOADS_DIR"/* "$DOCKER_VPP_DL_CACHE_DIR"
             fi
         fi
+        if [ -f "$DOCKER_BUILD_COVERITY_TARBALL" ]; then
+            rm -rf "$DOCKER_BLACK_DUCK_DIR"
+            mkdir -p "$DOCKER_BLACK_DUCK_DIR"
+            cd "$DOCKER_BLACK_DUCK_DIR"
+            tar xvf "$DOCKER_BUILD_COVERITY_TARBALL"
+            export DOCKER_BLACK_DUCK_BIN="$DOCKER_BLACK_DUCK_DIR/$(ls -d cov-analysis-linux*)/bin"
+        fi
         clean_git_repo $DOCKER_VPP_DIR
     fi
 }
