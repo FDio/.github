@@ -154,9 +154,14 @@ RUN wget https://releases.hashicorp.com/terraform/1.7.3/terraform_1.7.3_linux_$d
   && unzip terraform_1.7.3_linux_$dpkg_arch.zip \\
   && mv terraform /usr/bin \\
   && rm -f terraform_1.7.3_linux_$dpkg_arch.zip
+
+# Install uv for 'make test'
+#
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 EOF
 
     generate_apt_dockerfile_install_golang
+    generate_apt_dockerfile_setup_coverity
 
     cat <<EOF >>"$DOCKERFILE"
 
@@ -191,9 +196,9 @@ generate_apt_dockerfile_install_golang() {
 
 # Install golang for HostStack Test (HST) jobs
 #
-ENV GOPATH /go
-ENV GOROOT /usr/local/go
-ENV PATH \$GOPATH/bin:/usr/local/go/bin:\$PATH
+ENV GOPATH=/go
+ENV GOROOT=/usr/local/go
+ENV PATH=\$GOPATH/bin:/usr/local/go/bin:\$PATH
 RUN rm -rf /usr/local/go /usr/bin/go \\
     && wget -P /tmp "https://go.dev/dl/go${DOCKER_GOLANG_VERSION}.linux-${go_tarball_arch}.tar.gz" \\
     && tar -C /usr/local -xzf "/tmp/go${DOCKER_GOLANG_VERSION}.linux-${go_tarball_arch}.tar.gz" \\
@@ -202,6 +207,20 @@ RUN rm -rf /usr/local/go /usr/bin/go \\
     && echo -n "\nGOPATH=\$GOPATH\nGOROOT=\$GOROOT" | tee -a /etc/environment \\
     && mkdir -p "\$GOPATH/src" "\$GOPATH/bin" && chmod -R 777 "\$GOPATH"
 EOF
+}
+
+generate_apt_dockerfile_setup_coverity() {
+    if [ -d "${DOCKER_BLACK_DUCK_BIN-}" ] ; then
+    cat <<EOF >>"$DOCKERFILE"
+
+# Set Coverity build tools for static analysis
+#
+ENV BLACK_DUCK_BIN=$DOCKER_BLACK_DUCK_BIN
+ENV PATH=\$PATH:$DOCKER_BLACK_DUCK_BIN
+EOF
+    else
+        echo "WARNING: Coverity static analysis tools not installed!"
+    fi
 }
 
 # Generate 'builder' class apt dockerfile
