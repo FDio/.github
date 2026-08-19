@@ -54,7 +54,7 @@ make_vpp() {
     if [ "$target" = "install-ext-deps" ] ; then
         if [ -d "$DOCKER_VPP_DL_CACHE_DIR" ] ; then
             mkdir -p "$DOCKER_DOWNLOADS_DIR"
-            cp -a "$DOCKER_VPP_DL_CACHE_DIR"/* "$DOCKER_DOWNLOADS_DIR"
+            cp -a "$DOCKER_VPP_DL_CACHE_DIR"/* "$DOCKER_DOWNLOADS_DIR" || true
         fi
     fi
     bld_log="${bld_log}/$FDIOTOOLS_IMAGENAME-$branchname"
@@ -105,8 +105,16 @@ docker_build_setup_vpp() {
             git clone -q https://gerrit.fd.io/r/vpp $DOCKER_VPP_DIR
             if [ -d "$DOCKER_DOWNLOADS_DIR" ] ; then
                 mkdir -p "$DOCKER_VPP_DL_CACHE_DIR"
-                cp -a "$DOCKER_DOWNLOADS_DIR"/* "$DOCKER_VPP_DL_CACHE_DIR"
+                cp -a "$DOCKER_DOWNLOADS_DIR"/* "$DOCKER_VPP_DL_CACHE_DIR" || true
             fi
+        fi
+        if [ -f "$DOCKER_BUILD_COVERITY_TARBALL" ]; then
+            rm -rf "$DOCKER_BLACK_DUCK_DIR"
+            mkdir -p "$DOCKER_BLACK_DUCK_DIR"
+            pushd "$DOCKER_BLACK_DUCK_DIR"
+            tar xvf "$DOCKER_BUILD_COVERITY_TARBALL"
+            export DOCKER_BLACK_DUCK_BIN="$DOCKER_BLACK_DUCK_DIR/$(ls -d cov-analysis-linux*)/bin"
+            popd
         fi
         clean_git_repo $DOCKER_VPP_DIR
     fi
