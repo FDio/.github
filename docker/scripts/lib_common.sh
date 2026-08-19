@@ -109,6 +109,13 @@ do_git_branch() {
     echo_log -e "  'git log --oneline | head':\n----- %< -----\n$(git log --oneline | head)\n----- %< -----"
 }
 
+do_docker_login() {
+    local docker_login_script="/scratch/nomad/.docker-ro/dlogin.sh"
+    if [ -x "$docker_login_script" ] ; then
+        $docker_login_script
+    fi
+}
+
 clean_git_repo() {
     pushd "$1" >& /dev/null
     git clean -qfdx
@@ -254,6 +261,8 @@ export DOCKER_GOLANG_VERSION="1.26.5"
 export DOCKER_GHA_RUNNER_VERSION="2.335.1"
 export DOCKER_DOT_GITHUB_GHA_RUNNER_DIR="$DOCKER_DOT_GITHUB_ROOT"/docker/gha-runner
 export DOCKER_GHA_RUNNER_DIR="$DOCKER_BUILD_DIR"/gha-runner
+export DOCKER_BLACK_DUCK_DIR="$DOCKER_BUILD_DIR/black-duck"
+export DOCKER_BUILD_COVERITY_TARBALL=${DOCKER_BUILD_COVERITY_TARBALL:-/tmp/coverity_tarball.tgz}
 
 docker_build_setup_ciman() {
     if [ "$(dirname $DOT_GITHUB_ROOT)" != "$DOCKER_BUILD_DIR" ] ; then
