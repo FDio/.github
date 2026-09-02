@@ -274,6 +274,29 @@ scrape_configs:
     - source_labels: [__meta_consul_tags]
       regex: '(.*)http(.*)'
       action: keep
+    # Use service name as the job label
+    - source_labels: [__meta_consul_service]
+      target_label: job
+    # Add datacenter as a label
+    - source_labels: [__meta_consul_dc]
+      target_label: datacenter
+    # Add node name for infrastructure correlation
+    - source_labels: [__meta_consul_node]
+      target_label: node
+    # Extract environment from service metadata
+    - source_labels: [__meta_consul_service_metadata_env]
+      target_label: environment
+    # Extract team ownership from metadata
+    - source_labels: [__meta_consul_service_metadata_team]
+      target_label: team
+    # Set metrics path from service metadata
+    - source_labels: [__meta_consul_service_metadata_metrics_path]
+      target_label: __metrics_path__
+      regex: (.+)
+    # Build instance label from address and port
+    - source_labels: [__meta_consul_address, __meta_consul_service_port]
+      separator: ':'
+      target_label: instance
     metrics_path: /v1/metrics
     params:
       format: [ 'prometheus' ]

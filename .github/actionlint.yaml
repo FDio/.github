@@ -1,0 +1,8 @@
+self-hosted-runner:
+  labels:
+    - nomad
+    - fdio:arch=x86_64
+    - fdio:class=builder
+    - fdio:size=csit
+    - fdio:namespace=prod
+    - fdio:os=ubuntu2404
