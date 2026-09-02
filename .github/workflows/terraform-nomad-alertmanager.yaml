@@ -1,0 +1,84 @@
+---
+name: Terraform Nomad Alertmanager
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-nomad-alertmanager
+  cancel-in-progress: false
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+
+jobs:
+  verify:
+    runs-on:
+      - self-hosted
+      - nomad
+      - fdio:arch=x86_64
+      - fdio:class=builder
+      - fdio:size=csit
+      - fdio:namespace=prod
+      - fdio:os=ubuntu2404
+
+    defaults:
+      run:
+        working-directory: terraform/nomad-alertmanager
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Set up Terraform
+        # yamllint disable-line rule:line-length
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.12.1
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive
+
+      - name: Initialize Terraform
+        run: terraform init
+
+      - name: Validate Terraform configuration
+        run: terraform validate
+
+      - name: Create Terraform plan
+        run: terraform plan -out=tfplan
+
+  deploy:
+    needs: verify
+    runs-on:
+      - self-hosted
+      - nomad
+      - fdio:arch=x86_64
+      - fdio:class=builder
+      - fdio:size=csit
+      - fdio:namespace=prod
+      - fdio:os=ubuntu2404
+
+    defaults:
+      run:
+        working-directory: terraform/nomad-alertmanager
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Set up Terraform
+        # yamllint disable-line rule:line-length
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.12.1
+
+      - name: Create Terraform plan
+        run: terraform plan -out=tfplan
+
+      #- name: Apply Terraform plan
+      #  run: echo "terraform apply -auto-approve"

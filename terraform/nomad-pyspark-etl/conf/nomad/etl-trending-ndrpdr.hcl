@@ -95,8 +95,8 @@ job "etl-trending-ndrpdr" {
         image   = var.image
         command = "gluesparksubmit"
         args = [
-          "--driver-memory", "30g",
-          "--executor-memory", "30g",
+          "--driver-memory", "50g",
+          "--executor-memory", "50g",
           "--executor-cores", "2",
           "--master", "local[2]",
           "${var.script_name}.py"
