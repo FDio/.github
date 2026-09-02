@@ -7,10 +7,6 @@ name: GHCR gha-dispatcher
     paths:
       - "docker/gha-dispatcher/**"
       - "docker/gha-dispatcher/*"
-  pull_request:
-    paths:
-      - "docker/gha-dispatcher/**"
-      - "docker/gha-dispatcher/*"
   workflow_dispatch:
 
 env:
