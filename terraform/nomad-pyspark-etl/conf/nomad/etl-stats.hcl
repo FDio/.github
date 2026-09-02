@@ -84,22 +84,20 @@ job "etl-stats" {
     task "etl-stats" {
       artifact {
         source      = "https://raw.githubusercontent.com/FDio/csit/master/csit.infra.etl/${var.script_name}.py"
-        destination = "local/"
+        destination = "/home/hadoop/workspace"
       }
       artifact {
         source      = "https://raw.githubusercontent.com/FDio/csit/master/csit.infra.etl/${var.script_name}_sra.json"
-        destination = "local/"
+        destination = "/home/hadoop/workspace"
       }
       driver = "docker"
       config {
-        image   = var.image
-        command = "gluesparksubmit"
+        image   = "public.ecr.aws/glue/aws-glue-libs:5"
         args = [
-          "--driver-memory", "10g",
-          "--executor-memory", "10g",
-          "${var.script_name}.py"
+            "-c",
+            "ls -al /home/hadoop/workspace; python3 -m pip install awswrangler==3.17.1; spark-submit --driver-memory 16g --executor-memory 16g --executor-cores 4 /home/hadoop/workspace/stats.py"
         ]
-        work_dir = "/local"
+        work_dir = "/home/hadoop/workspace"
       }
       template {
         destination = "${NOMAD_SECRETS_DIR}/.env"

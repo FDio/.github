@@ -55,6 +55,18 @@ variable "dispatchers" {
   }))
   default = [
     {
+      id         = 1
+      namespace  = "prod"
+      repository = "fdio-github"
+      version    = "2.6.3"
+    },
+    {
+      id         = 2
+      namespace  = "sandbox"
+      repository = "fdio-github"
+      version    = "2.6.3"
+    },
+    {
       id         = 3
       namespace  = "prod"
       repository = "fdio-csit"
