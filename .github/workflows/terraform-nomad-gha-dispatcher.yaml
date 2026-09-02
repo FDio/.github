@@ -1,18 +1,18 @@
 ---
-name: Terraform Nomad Alertmanager
+name: Terraform Nomad GHA Dispatcher
 
 "on":
   push:
     paths:
-      - "terraform/nomad-alertmanager/**"
-      - "terraform/nomad-alertmanager/*"
+      - "terraform/nomad-gha-dispatcher/**"
+      - "terraform/nomad-gha-dispatcher/*"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: terraform-nomad-alertmanager
+  group: terraform-nomad-gha-dispatcher
   cancel-in-progress: false
 
 env:
@@ -32,7 +32,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: terraform/nomad-alertmanager
+        working-directory: terraform/nomad-gha-dispatcher
 
     steps:
       - name: Checkout repository
