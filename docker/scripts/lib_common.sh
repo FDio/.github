@@ -116,6 +116,34 @@ do_docker_login() {
     fi
 }
 
+do_ghcr_login() {
+    local ghcr_registry="${1:-ghcr.io}"
+    local set_opts="$-"
+    local login_rc=0
+
+    # Do not expose the token through xtrace or command output.
+    set +x
+    local ghcr_username="${GHCR_USERNAME:-${GITHUB_ACTOR:-}}"
+    local ghcr_token="${GHCR_TOKEN:-${GITHUB_TOKEN:-}}"
+
+    if [ -n "$ghcr_username" ] && [ -n "$ghcr_token" ] ; then
+        if ! printf '%s' "$ghcr_token" | docker login "$ghcr_registry" \
+            --username "$ghcr_username" --password-stdin ; then
+            login_rc=1
+        fi
+    elif [ -n "$ghcr_username" ] || [ -n "$ghcr_token" ] ; then
+        echo "ERROR: GHCR_USERNAME and GHCR_TOKEN must be set together!"
+        login_rc=1
+    else
+        echo "No GHCR credentials supplied; using existing Docker credentials for $ghcr_registry."
+    fi
+
+    if grep -q x <<< "$set_opts" ; then
+        set -x
+    fi
+    return "$login_rc"
+}
+
 clean_git_repo() {
     pushd "$1" >& /dev/null
     git clean -qfdx
@@ -162,8 +190,8 @@ export EXECUTOR_CLASS_ARCH="$EXECUTOR_DEFAULT_CLASS-$OS_ARCH"
 export EXECUTOR_CLASSES="$EXECUTOR_DEFAULT_CLASS csit_dut csit_shim"
 export EXECUTOR_ARCHS="aarch64 x86_64"
 declare -A EXECUTOR_CLASS_ARCH_OS_NAMES
-EXECUTOR_CLASS_ARCH_OS_NAMES["builder-aarch64"]="ubuntu-22.04 ubuntu-24.04"
-EXECUTOR_CLASS_ARCH_OS_NAMES["builder-x86_64"]="debian-12 ubuntu-22.04 ubuntu-24.04"
+EXECUTOR_CLASS_ARCH_OS_NAMES["builder-aarch64"]="ubuntu-22.04 ubuntu-24.04 ubuntu-26.04"
+EXECUTOR_CLASS_ARCH_OS_NAMES["builder-x86_64"]="debian-12 ubuntu-22.04 ubuntu-24.04 ubuntu-26.04"
 EXECUTOR_CLASS_ARCH_OS_NAMES["csit_dut-aarch64"]="ubuntu-22.04"
 EXECUTOR_CLASS_ARCH_OS_NAMES["csit_dut-x86_64"]="ubuntu-22.04"
 EXECUTOR_CLASS_ARCH_OS_NAMES["csit_shim-aarch64"]="ubuntu-22.04"
@@ -257,8 +285,8 @@ export DOCKER_VPP_DL_CACHE_DIR="$DOCKER_BUILD_DIR"/vpp_ext_deps_downloads
 export DOCKER_CSIT_DIR="$DOCKER_BUILD_DIR"/csit
 export DOCKER_DOWNLOADS_DIR="/root/Downloads"
 export DOCKER_BUILD_FILES_DIR="$DOCKER_BUILD_DIR"/files
-export DOCKER_GOLANG_VERSION="1.26.5"
-export DOCKER_GHA_RUNNER_VERSION="2.336.0"
+export DOCKER_GOLANG_VERSION="1.27.3"
+export DOCKER_GHA_RUNNER_VERSION="2.338.2"
 export DOCKER_DOT_GITHUB_GHA_RUNNER_DIR="$DOCKER_DOT_GITHUB_ROOT"/docker/gha-runner
 export DOCKER_GHA_RUNNER_DIR="$DOCKER_BUILD_DIR"/gha-runner
 export DOCKER_BLACK_DUCK_DIR="$DOCKER_BUILD_DIR/black-duck"
