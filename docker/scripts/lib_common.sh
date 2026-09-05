@@ -116,6 +116,34 @@ do_docker_login() {
     fi
 }
 
+do_ghcr_login() {
+    local ghcr_registry="${1:-ghcr.io}"
+    local set_opts="$-"
+    local login_rc=0
+
+    # Do not expose the token through xtrace or command output.
+    set +x
+    local ghcr_username="${GHCR_USERNAME:-${GITHUB_ACTOR:-}}"
+    local ghcr_token="${GHCR_TOKEN:-${GITHUB_TOKEN:-}}"
+
+    if [ -n "$ghcr_username" ] && [ -n "$ghcr_token" ] ; then
+        if ! printf '%s' "$ghcr_token" | docker login "$ghcr_registry" \
+            --username "$ghcr_username" --password-stdin ; then
+            login_rc=1
+        fi
+    elif [ -n "$ghcr_username" ] || [ -n "$ghcr_token" ] ; then
+        echo "ERROR: GHCR_USERNAME and GHCR_TOKEN must be set together!"
+        login_rc=1
+    else
+        echo "No GHCR credentials supplied; using existing Docker credentials for $ghcr_registry."
+    fi
+
+    if grep -q x <<< "$set_opts" ; then
+        set -x
+    fi
+    return "$login_rc"
+}
+
 clean_git_repo() {
     pushd "$1" >& /dev/null
     git clean -qfdx
