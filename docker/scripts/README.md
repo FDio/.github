@@ -95,10 +95,12 @@ branches
 ### Executor Docker Image Management Bash Scripts
 
 These scripts are used to build executor docker images, inspect the results, and
-manage the docker image tags in the Docker Hub fdiotools repositories.
+manage the docker image tags in the Docker Hub fdiotools repositories and
+optionally publish build images to Docker Hub or GitHub Container Registry.
 
 - `build_executor_docker_image.sh`: Build script to create one or more executor
-docker images.
+  docker images. Use `-p` to push GHA images to Docker Hub, `-g` to push them to
+  GHCR, or both flags to publish to both registries.
 
 - `update_dockerhub_prod_tags.sh`: Inspect/promote/revert production docker tag
 in the Docker Hub fdiotools repositories.
@@ -138,6 +140,17 @@ and push it to Docker Hub fdiotools/builder-ubuntu2004:test-<arch>:
 
 `build_executor_docker_image.sh -pr test ubuntu-24.04`
 
+To publish the GHA image to GHCR, use `-g` instead of `-p`:
+
+`build_executor_docker_image.sh -gr test ubuntu-24.04`
+
+The GHCR image is tagged as `ghcr.io/fdio/gha-<os name>:<tag>` by default.
+Set `GHCR_IMAGE_NAMESPACE` to change the GHCR namespace and
+`GHCR_REGISTRY` to change the registry host. For non-interactive login, set
+`GHCR_USERNAME` and `GHCR_TOKEN`; in GitHub Actions, `GITHUB_ACTOR` and
+`GITHUB_TOKEN` are also supported. A Docker client already logged in to GHCR
+can be used without setting credentials.
+
 In the future, a fully automated CI/CD pipeline may be created for production
 docker images.
 
@@ -173,6 +186,11 @@ separate hosts in parallel.
 
 Note: the 'prod' role is disallowed in the build script to prevent accidental
 deployment of untested docker images to production.
+
+Use `-g` to publish the same GHA image tags to GHCR, or use `-p -g` to publish
+to both registries. The build script publishes the generated GHA image and its
+optional role-based CI tag; production tag promotion remains a Docker Hub-only
+operation handled by `update_dockerhub_prod_tags.sh`.
 
 ### Test Docker Images in the GitHub Actions workflows with the sandbox Namespace.
 

@@ -29,21 +29,29 @@ export DOT_GITHUB_DOCKER_SCRIPTS=${DOT_GITHUB_DOCKER_SCRIPTS:-"$(dirname $BASH_S
 all_os_names=""
 ci_tag=""
 gha_ci_image=""
+ghcr_ci_image=""
 os_names=""
 push_to_docker_hub=""
+push_to_ghcr=""
 dump_dockerfile=""
 executor_docker_image=""
 gha_docker_image=""
+ghcr_docker_image=""
+
+GHCR_REGISTRY="ghcr.io"
+GHCR_REPO="fdio"
+DOCKER_REPO="fdiotools"
 
 usage() {
     set +x
     echo
-    echo "Usage: $0 [-c <class>] [-p] [-r <role>] -a | <os name> [... <os name>]"
+    echo "Usage: $0 [-c <class>] [-g] [-p] [-r <role>] -a | <os name> [... <os name>]"
     echo "  -a                Run all OS's supported on class $EXECUTOR_CLASS & arch $OS_ARCH"
     echo "  -c <class>        Default is '$EXECUTOR_DEFAULT_CLASS'"
     executor_list_classes
     echo "  -d                Generate Dockerfile, dump it to stdout, and exit"
-    echo "  -p                Push docker images to Docker Hub"
+    echo "  -g                Push GHA docker images to GHCR ($GHCR_REGISTRY/$GHCR_REPO)"
+    echo "  -p                Push GHA docker images to Docker Hub"
     echo "  -r <role>         Add a role based tag (e.g. sandbox-x86_64):"
     executor_list_roles
     executor_list_os_names
@@ -51,7 +59,7 @@ usage() {
 }
 
 must_be_run_as_root_or_docker_group
-while getopts ":ac:dhpr:" opt; do
+while getopts ":ac:dghpr:" opt; do
     case "$opt" in
         a)  all_os_names="1" ;;
         c) if executor_verify_class "$OPTARG" ; then
@@ -62,6 +70,7 @@ while getopts ":ac:dhpr:" opt; do
                usage
            fi ;;
         d) dump_dockerfile="1"; set +x ;;
+        g) push_to_ghcr="1" ;;
         h) usage ;;
         p) push_to_docker_hub="1" ;;
         r) if executor_verify_role "$OPTARG" ; then
@@ -104,6 +113,9 @@ done
 
 docker_build_setup_gha() {
     if vpp_supported_executor_class ; then
+        if [ -n "$push_to_ghcr" ] ; then
+            do_ghcr_login "$GHCR_REGISTRY"
+        fi
         rm -rf "$DOCKER_GHA_RUNNER_DIR"
         mkdir -p "$DOCKER_GHA_RUNNER_DIR"
         cp "$DOCKER_DOT_GITHUB_GHA_RUNNER_DIR"/* "$DOCKER_GHA_RUNNER_DIR"
@@ -126,8 +138,8 @@ for executor_os_name in $os_names ; do
     # Remove '-' and '.' from executor_os_name in Docker Hub repo name
     os_name="${executor_os_name//-}"
     os_name="${os_name//.}"
-    repository="fdiotools/${EXECUTOR_CLASS}-$os_name"
-    executor_docker_image="$repository:$DOCKER_TAG"
+    package_name="${EXECUTOR_CLASS}-$os_name"
+    executor_docker_image="$package_name:$DOCKER_TAG"
     if ! grep -q "$os_name" <<< "$executor_docker_image" ; then
         set_opts="$-"
         set +x # disable trace output
@@ -163,16 +175,28 @@ for executor_os_name in $os_names ; do
           --load \
           --no-cache \
           --platform linux/"$DEB_ARCH" \
-          --tag "$gha_docker_image" \
+          --tag "$DOCKER_REPO"/"$gha_docker_image" \
           --build-arg BASE_IMAGE="$executor_docker_image" \
           --build-arg DOCKER_GHA_RUNNER_DIR="${DOCKER_GHA_RUNNER_DIR}" \
           -f "${DOCKER_GHA_RUNNER_DIR}/Dockerfile" \
           "${DOCKER_GHA_RUNNER_DIR}"
          popd
+
+        if [ -n "$push_to_ghcr" ] ; then
+            ghcr_docker_image="$GHCR_REGISTRY/$GHCR_REPO/${gha_docker_image#*/}"
+            echo -e "\nAdding GHCR tag $ghcr_docker_image to $gha_docker_image"
+            docker tag "$gha_docker_image" "$ghcr_docker_image"
+        fi
+
         if [ -n "$ci_tag" ] ; then
-            gha_ci_image="${repository/$EXECUTOR_CLASS/gha}:$ci_tag"
+            gha_ci_image="${package_name/$EXECUTOR_CLASS/gha}:$ci_tag"
             echo -e "\nAdding docker tag $gha_ci_image to $gha_docker_image"
             docker tag "$gha_docker_image" "$gha_ci_image"
+            if [ -n "$push_to_ghcr" ] ; then
+                ghcr_ci_image="${ghcr_docker_image%:*}:$ci_tag"
+                echo -e "Adding GHCR tag $ghcr_ci_image to $ghcr_docker_image"
+                docker tag "$ghcr_docker_image" "$ghcr_ci_image"
+            fi
         fi
         if [ -n "$push_to_docker_hub" ] ; then
             if [ -n "$gha_docker_image" ] ; then
@@ -182,6 +206,16 @@ for executor_os_name in $os_names ; do
             if [ -n "$gha_ci_image" ] ; then
                 echo -e "\nPushing gha ci image tag '$gha_ci_image' to Docker Hub..."
                 docker push "$gha_ci_image"
+            fi
+        fi
+        if [ -n "$push_to_ghcr" ] ; then
+            if [ -n "$ghcr_docker_image" ] ; then
+                echo -e "\nPushing GHA docker image '$ghcr_docker_image' to GHCR..."
+                docker push "$ghcr_docker_image"
+            fi
+            if [ -n "$ghcr_ci_image" ] ; then
+                echo -e "\nPushing GHA CI image tag '$ghcr_ci_image' to GHCR..."
+                docker push "$ghcr_ci_image"
             fi
         fi
     fi
