@@ -48,37 +48,33 @@ docker_id_new=""
 digest_prod=""
 digest_prev=""
 digest_new=""
-restore_cmd=""
+GHCR_REGISTRY="ghcr.io"
+GHCR_REPO="fdio"
+DOCKERHUB_REPO="fdiotools"
+GHCR_IMAGE_PREFIX="$GHCR_REGISTRY/$GHCR_REPO"
+container_registry="$DOCKERHUB_REPO"
+container_registry_name="Docker Hub"
 
 usage() {
     local script="$(basename $0)"
     echo
-    echo "Usage: $script r[evert]  <prod image>"
-    echo "       $script p[romote] <new image> [<new image>]"
-    echo "       $script i[nspect] <prod image>"
-    echo
-    echo "  revert: swaps 'prod-<arch>' and 'prod-prev-<arch>' images"
-    echo "          <prod image>: e.g. fdiotools/builder-ubuntu2204:prod-x86_64"
+    echo "Usage: $script [-g] p[romote] <new image> [<new image>]"
+    echo "       $script [-g] i[nspect] <prod image>"
+    echo "  -g                Use GHCR ($GHCR_IMAGE_PREFIX); default is Docker Hub ($DOCKERHUB_REPO)"
     echo
     echo " promote: moves 'prod-<arch>' image to 'prod-prev-<arch>' tag and"
     echo "          tags <new image> with 'prod-<arch>'"
     echo "          <new image>: e.g. fdiotools/builder-ubuntu2204:2022_07_23_151655-x86_64"
+    echo "          with -g, use ghcr.io/fdio/<class>-<os name>:<version>-<arch>"
     echo " inspect: prints out all tags for prod-<arch> and prod-prev-<arch>"
     echo
     exit 1
 }
 
-echo_restore_cmd() {
-    echo -e "\n$long_bar\n"
-    echo "To restore tags to original state, issue the following command:"
-    echo -e "\n$restore_cmd\n\n$long_bar\n"
-}
-
-push_to_dockerhub() {
-    echo_restore_cmd
+push_to_container_registry() {
     for image in "$@" ; do
         set +e
-        echo "Pushing '$image' to docker hub..."
+        echo "Pushing '$image' to $container_registry_name..."
         if ! docker push "$image" ; then
             echo "ERROR: 'docker push $image' failed!"
             exit 1
@@ -87,16 +83,27 @@ push_to_dockerhub() {
 }
 
 parse_image_name() {
-    image_user="$(echo $1 | cut -d'/' -f1)"
-    image_repo="$(echo $1 | cut -d'/' -f2 | cut -d':' -f1)"
-    local tag="$(echo $1 | cut -d':' -f2)"
+    local image_path="${1%:*}"
+    local tag="${1##*:}"
+    local image_prefix="${image_path%/*}"
+    image_repo="${image_path##*/}"
+
+    if [ "$container_registry" = "$GHCR_IMAGE_PREFIX" ] ; then
+        case "$image_prefix" in
+            "$GHCR_IMAGE_PREFIX"|"$GHCR_REPO"|"$DOCKERHUB_REPO") ;;
+            *)
+                echo "ERROR: Image '$1' does not match GHCR registry '$GHCR_IMAGE_PREFIX'!"
+                usage ;;
+        esac
+    elif [ "$image_prefix" != "$DOCKERHUB_REPO" ] ; then
+        echo "ERROR: Image '$1' does not match Docker Hub repository '$DOCKERHUB_REPO'!"
+        usage
+    fi
+
+    image_user="$container_registry"
     image_version="$(echo $tag | cut -d'-' -f1)"
     image_arch="$(echo $tag | sed -e s/$image_version-//)"
     image_name_new="${image_user}/${image_repo}:${image_version}-${image_arch}"
-    if [ "$1" != "$image_name_new" ] ; then
-        echo "ERROR: Image name parsing failed: $1 != '$image_name_new'"
-        usage
-    fi
     if [[ "$image_version" =~ "prod" ]] ; then
         image_name_new=""
     fi
@@ -105,11 +112,15 @@ parse_image_name() {
 }
 
 format_image_tags() {
-    # Note: 'grep $image_arch' & grep -v 'prod-curr' is required due to a
-    #       bug in docker hub which returns old tags which were deleted via
-    #       the webUI, but are still retrieved by 'docker pull -a'
-    image_tags="$(docker image ls --format '{{.Repository}}:{{.Tag}} ${{.ID}}' | grep $1 | grep $image_arch | grep -v prod-curr | sort -r | mawk '{print $1}' | tr '\n' ' ')"
-    image_realname="$(docker image ls --format '{{.Repository}}:{{.Tag}} ${{.ID}}' | grep $1 | grep $image_arch | sort -r | grep -v prod | mawk '{print $1}' || true)"
+    local image_list="$(docker image ls --format '{{.Repository}}:{{.Tag}} ${{.ID}}')"
+    if [ "$container_registry" = "$DOCKERHUB_REPO" ] ; then
+        # Note: 'grep $image_arch' & grep -v 'prod-curr' is required due to a
+        #       bug in docker hub which returns old tags which were deleted via
+        #       the webUI, but are still retrieved by 'docker pull -a'
+        image_list="$(echo "$image_list" | grep $image_arch | grep -v prod-curr)"
+    fi
+    image_tags="$(echo "$image_list" | grep $1 | sort -r | mawk '{print $1}' | tr '\n' ' ')"
+    image_realname="$(echo "$image_list" | grep $1 | sort -r | grep -v prod | mawk '{print $1}' || true)"
     if [ -z "${image_realname:-}" ] ; then
         image_realname="$image_tags"
     fi
@@ -126,13 +137,7 @@ get_image_id_tags() {
         set -e
         if [ -z "$image_found" ] ; then
             if [ "$image" = "$image_name_prev" ] ; then
-                if [ "$action" = "revert" ] ; then
-                    echo "ERROR: Image '$image' not found!"
-                    echo "Unable to revert production image '$image_name_prod'!"
-                    usage
-                else
-                    continue
-                fi
+                continue
             else
                 echo "ERROR: Image '$image' not found!"
                 usage
@@ -170,16 +175,13 @@ get_image_id_tags() {
             image_tags_new="$image_tags"
         fi
     done
-    if [ -z "$restore_cmd" ] ; then
-        restore_cmd="sudo $0 p $image_realname_prev $image_realname_prod"
-    fi
 }
 
-get_all_tags_from_dockerhub() {
-    local dh_repo="$image_user/$image_repo"
-    echo -e "Pulling all tags from docker hub repo '$dh_repo':\n$long_bar"
-    if ! docker pull -a "$dh_repo" ; then
-        echo "ERROR: Repository '$dh_repo' not found on docker hub!"
+get_all_tags_from_container_registry() {
+    local registry_repo="$image_user/$image_repo"
+    echo -e "Pulling all tags from $container_registry_name repo '$registry_repo':\n$long_bar"
+    if ! docker pull -a "$registry_repo" ; then
+        echo "ERROR: Repository '$registry_repo' not found on $container_registry_name!"
         usage
     fi
     echo "$long_bar"
@@ -196,14 +198,8 @@ verify_image_version_date_format() {
 
 verify_image_name() {
     image_not_found=""
-    # Invalid user
-    if [ "$image_user" != "fdiotools" ] ; then
-        image_not_found="true"
-        echo "ERROR: invalid user '$image_user' in '$image_name_new'!"
-    fi
     # Invalid version
-    if [ -z "$image_not_found" ] \
-           && [ "$image_version" != "prod" ] \
+    if [ "$image_version" != "prod" ] \
            && ! verify_image_version_date_format "$image_version" ; then
         image_not_found="true"
         echo "ERROR: invalid version '$image_version' in '$image_name_new'!"
@@ -268,36 +264,6 @@ inspect_images() {
     echo -e "$short_bar\n"
 }
 
-revert_prod_image() {
-    inspect_images "EXISTING "
-    docker_tag_image "$docker_id_prod" "$image_name_prev"
-    docker_tag_image "$docker_id_prev" "$image_name_prod"
-    get_image_id_tags
-    inspect_images "REVERTED "
-
-    local yn=""
-    while true; do
-        read -p "Push Reverted tags to '$image_user/$image_repo' (yes/no)? " yn
-        case ${yn:0:1} in
-            y|Y )
-                break ;;
-            n|N )
-                echo -e "\nABORTING REVERT!\n"
-                docker_tag_image $docker_id_prev $image_name_prod
-                docker_tag_image $docker_id_prod $image_name_prev
-                get_image_id_tags
-                inspect_images "RESTORED LOCAL "
-                exit 1 ;;
-            * )
-                echo "Please answer yes or no." ;;
-        esac
-    done
-    echo
-    push_to_dockerhub $image_name_prev $image_name_prod
-    inspect_images ""
-    echo_restore_cmd
-}
-
 promote_new_image() {
     inspect_images "EXISTING "
     docker_tag_image "$docker_id_prod" "$image_name_prev"
@@ -314,8 +280,7 @@ promote_new_image() {
             n|N )
                 echo -e "\nABORTING PROMOTION!\n"
                 docker_tag_image "$docker_id_prev" "$image_name_prod"
-                local restore_both="$(echo $restore_cmd | mawk '{print $5}')"
-                if [[ -n "$restore_both" ]] ; then
+                if [[ -n "$image_realname_prev" ]] ; then
                     docker_tag_image "$image_realname_prev" "$image_name_prev"
                 else
                     docker_rmi_tag "$image_name_prev"
@@ -323,19 +288,35 @@ promote_new_image() {
                     docker_id_prev=""
                 fi
                 get_image_id_tags
-                inspect_images "RESTORED "
+                inspect_images "CURRENT "
                 exit 1 ;;
             * )
                 echo "Please answer yes or no." ;;
         esac
     done
     echo
-    push_to_dockerhub "$image_name_new" "$image_name_prev" "$image_name_prod"
+    push_to_container_registry "$image_name_new" "$image_name_prev" "$image_name_prod"
     inspect_images ""
-    echo_restore_cmd
 }
 
 must_be_run_as_root_or_docker_group
+
+while getopts ":gh" opt; do
+    case "$opt" in
+        g)
+            container_registry="$GHCR_IMAGE_PREFIX"
+            container_registry_name="GHCR"
+            ;;
+        h) usage ;;
+        \?)
+            echo "ERROR: Invalid option: -$OPTARG" >&2
+            usage ;;
+        :)
+            echo "ERROR: Option -$OPTARG requires an argument." >&2
+            usage ;;
+    esac
+done
+shift $(( $OPTIND-1 ))
 
 # Validate arguments
 num_args="$#"
@@ -344,12 +325,6 @@ if [ "$num_args" -lt "1" ] ; then
 fi
 action=""
 case "$1" in
-    r?(evert))
-        action="revert"
-        if [ "$num_args" -ne "2" ] ; then
-            echo "ERROR: Invalid number of arguments: $#"
-            usage
-        fi ;;
     p?(romote))
         if [ "$num_args" -eq "2" ] || [ "$num_args" -eq "3" ] ; then
             action="promote"
@@ -368,27 +343,24 @@ case "$1" in
         usage ;;
 esac
 shift
-do_docker_login
+if [ "$container_registry" = "$GHCR_IMAGE_PREFIX" ] ; then
+    do_ghcr_login "$GHCR_REGISTRY"
+else
+    do_docker_login
+fi
 
 # Update local tags
 tags_to_push=""
 for image in "$@" ; do
     parse_image_name "$image"
     verify_image_name "$image"
-    get_all_tags_from_dockerhub
+    get_all_tags_from_container_registry
     get_image_id_tags
     if [ "$action" = "promote" ] ; then
         if [ -n "$image_name_new" ] ; then
             promote_new_image
         else
             echo "ERROR: No new image specified to promote!"
-            usage
-        fi
-    elif [ "$action" = "revert" ] ; then
-        if [ "$image_version" = "prod" ] ; then
-            revert_prod_image
-        else
-            echo "ERROR: Non-production image '$image' specified!"
             usage
         fi
     else
