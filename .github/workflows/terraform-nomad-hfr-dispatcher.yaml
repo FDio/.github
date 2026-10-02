@@ -1,18 +1,18 @@
 ---
-name: Terraform Nomad PySpark ETL
+name: Terraform Nomad HFR Dispatcher
 
 "on":
   push:
     paths:
-      - "terraform/nomad-pyspark-etl/**"
-      - "terraform/nomad-pyspark-etl/*"
+      - "terraform/nomad-hfr-dispatcher/**"
+      - "terraform/nomad-hfr-dispatcher/*"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: terraform-nomad-pyspark-etl
+  group: terraform-nomad-hfr-dispatcher
   cancel-in-progress: false
 
 env:
@@ -32,7 +32,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: terraform/nomad-pyspark-etl
+        working-directory: terraform/nomad-hfr-dispatcher
 
     steps:
       - name: Checkout repository
