@@ -41,3 +41,5 @@ jobs:
       - name: Run Terraform
         # yamllint disable-line rule:line-length
         uses: fdio/.github/.github/actions/terraform-apply@main
+        with:
+          working-directory: terraform/nomad-hfr-dispatcher

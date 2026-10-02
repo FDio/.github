@@ -3,6 +3,12 @@ name: "🛠️ Hashicorp Terraform Helper"
 description: |
   This GitHub Action applies Terraform code.
 
+inputs:
+  working-directory:
+    description: "Specifies the working directory where the command is run."
+    required: true
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -17,24 +23,29 @@ runs:
       id: fmt
       shell: bash
       run: terraform fmt -check
+      working-directory: ${{ inputs.working-directory }}
       continue-on-error: true
 
     - name: Terraform Init
       id: init
       shell: bash
       run: terraform init -input=false
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Terraform Validate
       id: validate
       shell: bash
       run: terraform validate -no-color
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Terraform Plan
       id: plan
       shell: bash
       run: terraform plan -no-color -input=false
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Terraform Apply
       shell: bash
       if: github.event_name == 'workflow_dispatch'
       run: terraform apply -auto-approve
+      working-directory: ${{ inputs.working-directory }}
