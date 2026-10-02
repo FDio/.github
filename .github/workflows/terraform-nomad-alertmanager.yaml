@@ -38,30 +38,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Set up Terraform
+      - name: Run Terraform
         # yamllint disable-line rule:line-length
-        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
-        with:
-          terraform_version: 1.14.6
-          terraform_wrapper: false
-
-      - name: Terraform fmt
-        id: fmt
-        run: terraform fmt -check
-        continue-on-error: true
-
-      - name: Terraform Init
-        id: init
-        run: terraform init -input=false
-
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate -no-color
-
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -no-color -input=false
-
-      - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch'
-        run: terraform apply -auto-approve
+        uses: fdio/.github/.github/actions/terraform-apply@main
