@@ -1,0 +1,4 @@
+org.opencontainers.image.title=csit-executor-sut-inner
+org.opencontainers.image.description=CSIT SUT executor inner image
+org.opencontainers.image.vendor=FD.io
+org.opencontainers.image.authors=FD.io

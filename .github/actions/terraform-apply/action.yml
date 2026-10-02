@@ -1,0 +1,40 @@
+---
+name: "🛠️ Hashicorp Terraform Helper"
+description: |
+  This GitHub Action applies Terraform code.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Terraform
+      # yamllint disable-line rule:line-length
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+      with:
+        terraform_version: 1.14.6
+        terraform_wrapper: false
+
+    - name: Terraform fmt
+      id: fmt
+      shell: bash
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      shell: bash
+      run: terraform init -input=false
+
+    - name: Terraform Validate
+      id: validate
+      shell: bash
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      shell: bash
+      run: terraform plan -no-color -input=false
+
+    - name: Terraform Apply
+      shell: bash
+      if: github.event_name == 'workflow_dispatch'
+      run: terraform apply -auto-approve
