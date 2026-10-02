@@ -14,6 +14,6 @@ target "prod" {
       "linux/aarch64"
     ]
     args = {
-        BASE_IMAGE = "ubuntu:24.04"
+        BASE_IMAGE = "ghcr.io/fdio/csit-executor-sut-prod:latest"
     }
 }
