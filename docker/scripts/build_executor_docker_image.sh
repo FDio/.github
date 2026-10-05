@@ -116,6 +116,55 @@ docker_build_setup_gha() {
     fi
 }
 
+bake_hst_images() {
+    local executor_image="$1"
+    local executor_os_name="$2"
+    if [ "$EXECUTOR_CLASS" != "builder" ] || [[ "$executor_os_name" != ubuntu-* ]]; then
+        return 0
+    fi
+
+    local bundle_dir
+    bundle_dir=$(mktemp -d /tmp/hst-bundle.XXXXXX)
+    local bake_container="hst-bake-${executor_os_name//./-}-${DOCKER_DATE}-$$"
+    if ! docker run --name "$bake_container" \
+        --privileged \
+        --env HTTP_PROXY --env HTTPS_PROXY --env NO_PROXY \
+        --env http_proxy --env https_proxy --env no_proxy \
+        --env "HST_BAKE_BRANCHES=${HST_BAKE_BRANCHES:-}" \
+        "$executor_image" \
+        /bin/bash \
+        "$DOCKER_DOT_GITHUB_ROOT/docker/scripts/bake_hst_images.sh"; then
+        docker rm -fv "$bake_container" || true
+        rm -rf "$bundle_dir"
+        return 1
+    fi
+    if ! docker cp "$bake_container:/tmp/hst-bundle/." "$bundle_dir/"; then
+        docker rm -fv "$bake_container" || true
+        rm -rf "$bundle_dir"
+        return 1
+    fi
+    mkdir -p "$bundle_dir/docker_cache"
+    if ! docker cp "$bake_container:$DOCKER_BUILD_DIR/docker_cache/." "$bundle_dir/docker_cache/"; then
+        docker rm -fv "$bake_container" || true
+        rm -rf "$bundle_dir"
+        return 1
+    fi
+    docker rm -v "$bake_container"
+
+    cat > "$bundle_dir/Dockerfile" <<EOF
+FROM $executor_image
+COPY *.images /opt/hst-images/
+COPY *.tar.gz /opt/hst-images/
+COPY cache-mounts/ /opt/hst-cache-mounts/
+COPY docker_cache/ $DOCKER_BUILD_DIR/docker_cache/
+EOF
+    if ! docker build --tag "$executor_image" "$bundle_dir"; then
+        rm -rf "$bundle_dir"
+        return 1
+    fi
+    rm -rf "$bundle_dir"
+}
+
 # Build the specified docker images
 docker_build_setup_ciman
 docker_build_setup_vpp
@@ -156,6 +205,7 @@ for executor_os_name in $os_names ; do
     else
         do_docker_login
         docker build -t "$executor_docker_image" "$DOCKER_BUILD_DIR"
+        bake_hst_images "$executor_docker_image" "$executor_os_name"
         rm -f "$DOCKERFILE"
         gha_docker_image="${executor_docker_image/$EXECUTOR_CLASS/gha}"
         pushd "$DOCKER_GHA_RUNNER_DIR"
