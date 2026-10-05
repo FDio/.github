@@ -164,7 +164,7 @@ csit_pip_cache() {
         activate_virtualenv "${CSIT_DIR}" "${CSIT_DIR}"/tox-requirements.txt 2>&1 | tee -a "$bld_log"
 
         # Clean up virtualenv directories
-        git checkout -q -- .
+        git restore .
         git clean -qfdx
         echo_log "    Completed $description!" 2>&1 | tee -a "$bld_log"
     else
