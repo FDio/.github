@@ -42,6 +42,14 @@ the executor image is as follows:
 
 5. `docker build` is run on the generated Dockerfile.
 
+For Ubuntu builder images, the script then bakes hs-test container images.
+It runs the completed executor image as a privileged temporary container with
+its own Docker daemon, builds hs-test images for each supported VPP branch, and
+saves each branch's images as a compressed Docker archive. A final Docker layer
+copies the archives into `/opt/hst-images` and the hs-test BuildKit cache into
+`/scratch/docker-build/docker_cache`. It also copies snapshots of the hs-test
+Dockerfile cache mounts into `/opt/hst-cache-mounts`.
+
 ## Bash Libraries (lib_*.sh)
 
 The bash libraries are designed to be sourced both inside of the docker build
@@ -91,6 +99,13 @@ macros / scripts
 
 - `dbld_vpp_install_packages.sh`: Install OS and python packages for VPP
 branches
+
+- `bake_hst_images.sh`: Build and archive HST images inside the temporary
+privileged Ubuntu builder container.
+
+- `hst_cache.sh`: Load baked HST images and restore their BuildKit cache
+mounts with `restore BRANCH` (default branch: `master`), or snapshot cache mounts
+with `export CACHE_DIR`.
 
 ### Executor Docker Image Management Bash Scripts
 

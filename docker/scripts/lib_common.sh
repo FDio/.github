@@ -276,9 +276,11 @@ docker_build_setup_ciman() {
         fi
         echo_log "Syncing $DOT_GITHUB_ROOT into $DOCKER_DOT_GITHUB_ROOT..."
         mkdir -p "$DOCKER_BUILD_DIR"
+        chmod 777 "$DOCKER_BUILD_DIR"
         rsync -a "$DOT_GITHUB_ROOT/." "$DOCKER_DOT_GITHUB_ROOT"
     else
         mkdir -p "$DOCKER_BUILD_DIR"
+        chmod 777 "$DOCKER_BUILD_DIR"
     fi
 }
 
