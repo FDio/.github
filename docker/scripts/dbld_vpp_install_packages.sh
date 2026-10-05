@@ -55,11 +55,11 @@ for branch in ${VPP_BRANCHES[$OS_NAME]} ; do
 
     # Install hs-test depndencies
     if [ "$OS_ID" = "ubuntu" ] ; then
-        make_vpp build "$branch" "false"
-        make_vpp build-release "$branch" "false"
-        make_vpp build-vpp-gcov "$branch" "false"
-        make_vpp checkstyle-go "$branch" "false"
-        install_hst_deps "$branch"
+        make_vpp_hst build "$branch"
+        make_vpp_hst build-release "$branch"
+        make_vpp_hst build-cov "$branch"
+        make_vpp_hst checkstyle-go "$branch"
+        make_vpp_hst install-deps "$branch"
         git clean -qfdx
     fi
 
