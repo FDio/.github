@@ -32,17 +32,24 @@ vpp_supported_executor_class() {
     return 0
 }
 
-install_hst_deps() {
-    local branch=${1:-"master"}
+make_vpp_hst() {
+    local target=$1
+    local branch=${2:-"master"}
     local branchname=${branch/\//_}
-    local hst_dir="./extras/hs-test"
     local bld_log="$DOCKER_BUILD_LOG_DIR"
     bld_log="${bld_log}/$FDIOTOOLS_IMAGENAME-$branchname"
-    bld_log="${bld_log}-install_hst_deps_bld.log"
+    bld_log="${bld_log}-make_vpp_hst_${target}-bld.log"
 
-    if [ -d "$hst_dir" ] ; then
-        make -C "$hst_dir" install-deps 2>&1 | tee -a "$bld_log"
+    makefile_target="^${target}:"
+    if ! grep "$makefile_target" test/hs-test/Makefile ; then
+        echo "Make target '$target' does not exist for hs-test in VPP branch '$branch'!"
+        return
     fi
+    description="'make -C test/hs-test $target' in $(pwd) ($branch)"
+    echo_log "    Starting  $description..."
+    make -C test/hs-test "$target" 2>&1 | tee -a "$bld_log"
+    git checkout -q -- .
+    echo_log "    Completed $description!"
 }
 
 make_vpp() {
