@@ -1,12 +1,12 @@
 group "default" {
     targets = [
-      "prod"
+      "prod-x86_64"
     ]
 }
 
 target "docker-metadata-action" {}
 
-target "prod" {
+target "prod-x86_64" {
     inherits = ["docker-metadata-action"]
     dockerfile = "Dockerfile"
     platforms = [

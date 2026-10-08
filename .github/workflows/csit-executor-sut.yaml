@@ -23,14 +23,21 @@ jobs:
     name: Build Docker Images
 
     runs-on:
-      - ubuntu-latest
+      - self-hosted
+      - nomad
+      - fdio:arch=${{ matrix.target }}
+      - fdio:class=builder
+      - fdio:namespace=prod
+      - fdio:os=ubuntu2404
+      - fdio:workflow=${{ github.run_id }}
 
     strategy:
       matrix:
         image:
           - csit-executor-sut
         target:
-          - prod
+          - aarch64
+          - x86_64
 
     steps:
       - name: Checkout repository
@@ -142,5 +149,5 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           sbom: ${{ github.event_name != 'pull_request' }}
           source: .
-          targets: ${{ matrix.target }}
+          targets: prod-${{ matrix.target }}
           workdir: ./docker/${{ matrix.image }}
