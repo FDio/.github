@@ -29,6 +29,7 @@ RUN apt-get update -qq \
       libelf-dev \
       libnuma-dev \
       libtraceevent-dev \
+      pkg-config \
       python3-all \
       python3-apt \
       python3-dev \

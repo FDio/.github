@@ -44,16 +44,7 @@ jobs:
 
       - name: Start docker daemon
         shell: bash
-        env:
-          START_DOCKER_SCRIPT: start-docker.sh
-        run: |
-          if [ -n "$(which $START_DOCKER_SCRIPT)" ] ; then
-            cat "$(which $START_DOCKER_SCRIPT)"
-            $START_DOCKER_SCRIPT
-          else
-            echo "Docker startup script not found on PATH: $START_DOCKER_SCRIPT"
-            exit 1
-          fi
+        run: start-docker.sh
 
       - name: Cache Docker layers
         id: actions_cache
