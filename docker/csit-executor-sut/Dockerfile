@@ -1,6 +1,6 @@
 # Import necessary base images
 ARG BASE_IMAGE=ubuntu:24.04
-FROM ${BASE_IMAGE:-ubuntu} AS dpdk_stage
+FROM ${BASE_IMAGE:-ubuntu} AS build_stage
 
 ARG DPDK_VERSION=26.07
 
@@ -22,9 +22,13 @@ ENV LANG="en_US.UTF-8" LANGUAGE="en_US" LC_ALL="en_US.UTF-8"
 
 RUN apt-get update -qq \
  && apt-get install -y \
+      bison \
       build-essential \
       ca-certificates \
+      flex \
+      libelf-dev \
       libnuma-dev \
+      libtraceevent-dev \
       python3-all \
       python3-apt \
       python3-dev \
@@ -37,7 +41,10 @@ RUN apt-get update -qq \
       xz-utils \
  && wget --quiet http://fast.dpdk.org/rel/dpdk-${DPDK_VERSION}.tar.xz \
  && mkdir --parents /dpdk \
- && tar --extract --file=dpdk-${DPDK_VERSION}.tar.xz --directory=/dpdk --strip-components 1
+ && tar --extract --file=dpdk-${DPDK_VERSION}.tar.xz --directory=/dpdk --strip-components 1 \
+ && wget --quiet https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.8.tar.gz \
+ && mkdir --parents /linux \
+ && tar --extract --gzip --file=linux-6.8.tar.gz --directory=/linux --strip-components 1
 
 # CSIT PIP pre-cache
 RUN python3 -m venv venv \
@@ -54,6 +61,11 @@ ENV PATH="$PATH:/venv/bin"
 RUN cd /dpdk \
  && meson setup -Dexamples=l3fwd -Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC=y -Dplatform=generic build \
  && ninja -C build
+
+# Install PERF
+RUN cd /linux/tools/perf \
+ && make \
+ && chmod +x perf
 
 FROM ${BASE_IMAGE:-ubuntu} AS csit_prod
 
@@ -77,6 +89,7 @@ ENV LANG="en_US.UTF-8" LANGUAGE="en_US" LC_ALL="en_US.UTF-8"
 RUN apt-get -q update \
  && apt-get install -y -qq \
         apt-transport-https \
+        bison \
         bridge-utils \
         ca-certificates \
         cgroup-tools \
@@ -85,10 +98,12 @@ RUN apt-get -q update \
         curl \
         dkms \
         ethtool \
+        flex \
         gdb \
         gfortran \
         libapr1 \
         libblas-dev \
+        libelf-dev \
         libffi-dev \
         libibverbs-dev \
         liblapack-dev \
@@ -102,6 +117,7 @@ RUN apt-get -q update \
         libpixman-1-dev \
         libsctp-dev \
         libssl-dev \
+        libtraceevent-dev \
         net-tools \
         openssh-server \
         pciutils \
@@ -150,7 +166,8 @@ RUN python3 -m venv venv \
  && venv/bin/pip3 install --upgrade wheel
 
 # Extract DPDK from previous image.
-COPY --from=dpdk_stage /dpdk /opt/dpdk
+COPY --from=build_stage /dpdk /opt/dpdk
+COPY --from=build_stage /linux/tools/perf/perf /usr/bin/perf
 
 RUN useradd -rm -d /home/testuser -s /bin/bash -g 1000 -G sudo testuser \
  && echo 'testuser:Csit1234' | chpasswd
