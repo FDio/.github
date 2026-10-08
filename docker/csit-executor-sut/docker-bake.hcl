@@ -28,4 +28,3 @@ target "prod-aarch64" {
         BASE_IMAGE = "ubuntu:24.04"
     }
 }
-
