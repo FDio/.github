@@ -65,7 +65,7 @@ RUN cd /dpdk \
 # Install PERF
 RUN cd /linux/tools/perf \
  && make \
- $$ chmod +x perf
+ && chmod +x perf
 
 FROM ${BASE_IMAGE:-ubuntu} AS csit_prod
 
