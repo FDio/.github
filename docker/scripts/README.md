@@ -159,7 +159,7 @@ The others will be supported in the near future.
 For each hardware architecture, the build_executor_docker_image.sh script is
 used to build all variants of the each executor class:
 
-1. `git clone https://gerrit.fd.io/r/ci-management && cd ci-management`
+1. `git clone https://gerrit.fd.io/r/.github && cd .github`
 
 2. `sudo ./docker/scripts/build_executor_docker_image.sh -p -r sandbox -a | tee builder-all-sandbox-$(uname -m).log | grep -ve '^+'``
 
