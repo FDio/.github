@@ -34,11 +34,13 @@ job "gha-runner" {
         image_pull_timeout = "20m"
         force_pull         = true
         privileged         = true
-        volumes = [
+        volumes = concat([
             "/tmp/ccache.${var.os}:/scratch/ccache",
             "/scratch/nomad:/scratch/nomad:ro",
             "/var/crash:/var/crash"
-        ]
+        ], var.constraint_class == "hst" ? [
+            "/var/run/docker.sock:/var/run/docker-host.sock"
+        ] : [])
       }
       template {
         destination = "${NOMAD_SECRETS_DIR}/.env"
