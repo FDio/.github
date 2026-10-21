@@ -72,6 +72,30 @@
       "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5bf317ee_edfb02ad",
+        "filename": "docker/scripts/lib_apt.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 3121
+      },
+      "writtenOn": "2026-10-21T21:16:34Z",
+      "side": 1,
+      "message": "Done.",
+      "parentUuid": "e2703171_cf513131",
+      "range": {
+        "startLine": 34,
+        "startChar": 47,
+        "endLine": 34,
+        "endChar": 53
+      },
+      "revId": "e19925a2b6462cd206c6b9584cfa63bf98b21a9a",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "8fe4a424_fffc2f64",
