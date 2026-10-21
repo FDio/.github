@@ -53,7 +53,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  visibility:
+    runs-on: ubuntu-latest
+    outputs:
+      visible: ${{ steps.check.outputs.visible }}
+    steps:
+      - name: Check change is visible to the voting account
+        id: check
+        env:
+          GERRIT_SERVER: ${{ vars.GERRIT_SERVER }}
+          GERRIT_SSH_REQUIRED_USER: ${{ vars.GERRIT_SSH_REQUIRED_USER }}
+          GERRIT_KNOWN_HOSTS: ${{ vars.GERRIT_KNOWN_HOSTS }}
+          # yamllint disable-line rule:line-length
+          GERRIT_SSH_REQUIRED_PRIVKEY: ${{ secrets.GERRIT_SSH_REQUIRED_PRIVKEY }}
+          GERRIT_CHANGE_NUMBER: ${{ inputs.GERRIT_CHANGE_NUMBER }}
+        run: |
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          printf '%s\n' "$GERRIT_SSH_REQUIRED_PRIVKEY" > "$HOME/.ssh/id_rsa"
+          chmod 600 "$HOME/.ssh/id_rsa"
+          printf '%s\n' "$GERRIT_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 644 "$HOME/.ssh/known_hosts"
+          rows=$(ssh -p 29418 -i "$HOME/.ssh/id_rsa" \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -o StrictHostKeyChecking=yes \
+            "$GERRIT_SSH_REQUIRED_USER@$GERRIT_SERVER" \
+            gerrit query --format=JSON "change:$GERRIT_CHANGE_NUMBER" \
+            | grep -o '"rowCount":[0-9]*' | cut -d: -f2)
+          if [ "${rows:-0}" -ge 1 ]; then
+            echo "visible=true" >> "$GITHUB_OUTPUT"
+            echo "Change $GERRIT_CHANGE_NUMBER is visible."
+          else
+            echo "visible=false" >> "$GITHUB_OUTPUT"
+            echo "Change $GERRIT_CHANGE_NUMBER not visible; skipping."
+          fi
+
   prepare:
+    needs: visibility
+    if: ${{ needs.visibility.outputs.visible == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Clear votes
@@ -72,7 +109,8 @@ jobs:
         run: sleep 10s
 
   info-yaml-verify:
-    needs: prepare
+    needs: [visibility, prepare]
+    if: ${{ needs.visibility.outputs.visible == 'true' }}
     # yamllint disable-line rule:line-length
     uses: lfit/releng-reusable-workflows/.github/workflows/gerrit-compose-required-info-yaml-verify.yaml@main
     with:
@@ -90,9 +128,10 @@ jobs:
       GERRIT_SSH_REQUIRED_PRIVKEY: ${{ secrets.GERRIT_SSH_REQUIRED_PRIVKEY }}
 
   vote:
-    if: ${{ always() }}
+    # yamllint disable-line rule:line-length
+    if: ${{ always() && needs.visibility.outputs.visible == 'true' }}
     # yamllint enable rule:line-length
-    needs: [prepare, info-yaml-verify]
+    needs: [visibility, prepare, info-yaml-verify]
     runs-on: ubuntu-latest
     steps:
       # yamllint disable-line rule:line-length
