@@ -50,6 +50,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "e2703171_cf513131",
+        "filename": "docker/scripts/lib_apt.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 10
+      },
+      "writtenOn": "2026-10-21T20:10:52Z",
+      "side": 1,
+      "message": "please rebase on https://gerrit.fd.io/r/c/.github/+/47228 (which updates the dind image for noble \u0026 jammy)",
+      "parentUuid": "f7f092af_08d3aa18",
+      "range": {
+        "startLine": 34,
+        "startChar": 47,
+        "endLine": 34,
+        "endChar": 53
+      },
+      "revId": "e19925a2b6462cd206c6b9584cfa63bf98b21a9a",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "8fe4a424_fffc2f64",
         "filename": "docker/scripts/lib_csit.sh",
         "patchSetId": 2
