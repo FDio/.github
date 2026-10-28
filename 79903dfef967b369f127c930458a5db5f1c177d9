@@ -16,6 +16,24 @@
       "message": "i need to test that...someday\nwhat is the benefit of this compared to if i do regular gc cleanup on nomad itself?",
       "revId": "79903dfef967b369f127c930458a5db5f1c177d9",
       "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b93fc28a_068c2659",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 123
+      },
+      "writtenOn": "2026-10-28T08:04:55Z",
+      "side": 1,
+      "message": "by \"regular gc cleanup on nomad itself\" you mean some cronjob running on nomad hosts to do docker volume prune?\n\nbenefit of this is that hs-test d-in-d state is inside allocation directory, so allocation cleanup can reclaim it directly without creating anonymous Docker volume on nomad host.",
+      "parentUuid": "9f8c85bd_b6bb1b02",
+      "revId": "79903dfef967b369f127c930458a5db5f1c177d9",
+      "serverId": "6d2eb258-4fe2-443e-8a38-ca81da23d4c2"
     }
   ]
 }
