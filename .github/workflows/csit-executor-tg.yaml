@@ -148,9 +148,9 @@ jobs:
             ./docker-bake.hcl
             cwd://${{ steps.metadata.outputs.bake-file }}
           load: ${{ github.event_name == 'pull_request' }}
-          provenance: ${{ github.event_name != 'pull_request' }}
-          push: ${{ github.event_name != 'pull_request' }}
-          sbom: ${{ github.event_name != 'pull_request' }}
+          provenance: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' }}
+          sbom: ${{ github.event_name == 'push' }}
           source: .
           targets: prod-${{ matrix.target }}
           workdir: ./docker/${{ matrix.image }}
