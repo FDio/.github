@@ -14,7 +14,7 @@ target "prod-x86_64" {
       "linux/amd64"
     ]
     args = {
-        BASE_IMAGE = "ubuntu:24.04"
+        BASE_IMAGE = "ubuntu:26.04"
     }
 }
 
@@ -25,6 +25,6 @@ target "prod-aarch64" {
       "linux/aarch64"
     ]
     args = {
-        BASE_IMAGE = "ubuntu:24.04"
+        BASE_IMAGE = "ubuntu:26.04"
     }
 }
