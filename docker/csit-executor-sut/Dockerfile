@@ -1,5 +1,5 @@
 # Import necessary base images
-ARG BASE_IMAGE=ubuntu:24.04
+ARG BASE_IMAGE=ubuntu:26.04
 FROM ${BASE_IMAGE:-ubuntu} AS build_stage
 
 ARG DPDK_VERSION=26.07
@@ -42,10 +42,7 @@ RUN apt-get update -qq \
       xz-utils \
  && wget --quiet http://fast.dpdk.org/rel/dpdk-${DPDK_VERSION}.tar.xz \
  && mkdir --parents /dpdk \
- && tar --extract --file=dpdk-${DPDK_VERSION}.tar.xz --directory=/dpdk --strip-components 1 \
- && wget --quiet https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.8.tar.gz \
- && mkdir --parents /linux \
- && tar --extract --gzip --file=linux-6.8.tar.gz --directory=/linux --strip-components 1
+ && tar --extract --file=dpdk-${DPDK_VERSION}.tar.xz --directory=/dpdk --strip-components 1
 
 # CSIT PIP pre-cache
 RUN python3 -m venv venv \
@@ -63,10 +60,6 @@ RUN cd /dpdk \
  && meson setup -Dexamples=l3fwd -Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC=y -Dplatform=generic build \
  && ninja -C build
 
-# Install PERF
-RUN cd /linux/tools/perf \
- && make \
- && chmod +x perf
 
 FROM ${BASE_IMAGE:-ubuntu} AS csit_prod
 
@@ -108,9 +101,9 @@ RUN apt-get -q update \
         libffi-dev \
         libibverbs-dev \
         liblapack-dev \
-        libmbedcrypto7 \
-        libmbedtls14 \
-        libmbedx509-1 \
+        libmbedcrypto16 \
+        libmbedtls21 \
+        libmbedx509-7 \
         libnuma1 \
         libnuma-dev \
         libpcap-dev \
@@ -119,6 +112,7 @@ RUN apt-get -q update \
         libsctp-dev \
         libssl-dev \
         libtraceevent-dev \
+        linux-tools-common \
         net-tools \
         openssh-server \
         pciutils \
@@ -168,7 +162,6 @@ RUN python3 -m venv venv \
 
 # Extract DPDK from previous image.
 COPY --from=build_stage /dpdk /opt/dpdk
-COPY --from=build_stage /linux/tools/perf/perf /usr/bin/perf
 
 RUN useradd -rm -d /home/testuser -s /bin/bash -g 1000 -G sudo testuser \
  && echo 'testuser:Csit1234' | chpasswd
